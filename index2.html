@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>
+        // TRAVA DE SEGURANÇA FORÇADA: Se não estiver logado, para o carregamento na hora e vai pro login
+        if (localStorage.getItem('labdiag_logado') !== 'true') {
+            window.location.href = 'login.html';
+            window.stop(); // Para o carregamento do HTML imediatamente
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labdiag - Painel de Controle e Auditoria</title>
+    <style>
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex p-5">
+            <div>
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white font-bold text-xl shadow-md">LD</div>
+                    <span class="text-lg font-bold tracking-wider">LABDIAG</span>
+                </div>
+                <nav class="space-y-2">
+                    <a href="painelfin.html" class="flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium transition-all">
+                        <i class="fa-solid fa-chart-pie w-5"></i> Painel Geral
+                    </a>
+                    <a href="contasapagar.html" class="flex items-center gap-3 bg-slate-800 text-blue-400 px-4 py-3 rounded-lg font-medium">
+                        <i class="fa-solid fa-file-invoice-dollar w-5"></i> Contas a Pagar
+                    </a>
+                    <a href="extrato.html" class="flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium transition-all">
+                        <i class="fa-solid fa-file-signature w-5"></i> Extratos e Filtros
+                    </a>
+                    
+                    <a href="javascript:void(0)" onclick="localStorage.removeItem('labdiag_logado'); window.location.href='login.html';" 
+                       class="flex items-center gap-3 text-red-400 hover:bg-red-950/40 hover:text-red-300 px-4 py-3 rounded-lg font-medium transition-all mt-8 border-t border-slate-800/60 pt-4">
+                        <i class="fa-solid fa-arrow-right-from-bracket w-5"></i> Sair do Sistema
+                    </a>
+                </nav>
+            </div>
+            <div class="text-sm text-slate-500">v3.9.0 • Labdiag Core</div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Gestão de Contas e Conciliação</h1>
+                    <p class="text-sm text-slate-500">Acompanhamento completo de faturamento, auditoria e repasses</p>
+                </div>
+            </header>
+
+            <main class="p-8 space-y-8 max-w-7xl w-full mx-auto">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div><p class="text-xs font-semibold text-slate-400 uppercase">A Pagar</p><h3 class="text-xl font-bold mt-1" id="kpi-apagar">R$ 0,00</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div><p class="text-xs font-semibold text-slate-400 uppercase">Auditado Retido</p><h3 class="text-xl font-bold mt-1" id="kpi-auditado">R$ 0,00</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div><p class="text-xs font-semibold text-slate-400 uppercase">Total Pago</p><h3 class="text-xl font-bold mt-1" id="kpi-pago">R$ 0,00</h3></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                        <div><p class="text-xs font-semibold text-slate-400 uppercase">Total Recuperado</p><h3 class="text-xl font-bold text-emerald-600 mt-1" id="kpi-recuperado">R$ 0,00</h3></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm xl:col-span-1">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2" id="form-titulo">
+                            <i class="fa-solid fa-file-circle-plus text-blue-600"></i> Lançamento e Conciliação
+                        </h3>
+                        <div class="space-y-3">
+                            <input type="hidden" id="edit-timestamp">
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="competencia" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Data Competência</label>
+                                    <input type="text" id="competencia" placeholder="Ex: 10/2025" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label for="dias_atraso" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Dias em Atraso</label>
+                                    <input type="number" id="dias_atraso" placeholder="0" readonly class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-500 focus:outline-none cursor-not-allowed">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1" for="prestador">Prestador</label>
+                                <input type="text" id="prestador" placeholder="Nome do prestador" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1" for="setor">Setor</label>
+                                    <input type="text" id="setor" placeholder="Ex: Radiologia" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1" for="grupo">Grupo</label>
+                                    <input type="text" id="grupo" placeholder="Ex: Médicos" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label for="valor_faturado" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Faturado (R$)</label>
+                                    <input type="number" step="0.01" id="valor_faturado" placeholder="0.00" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label for="valor_auditado" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Auditado (R$)</label>
+                                    <input type="number" step="0.01" id="valor_auditado" placeholder="0.00" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                                </div>
+                                <div>
+                                    <label for="valor_repasse" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Repasse (R$)</label>
+                                    <input type="number" step="0.01" id="valor_repasse" placeholder="0.00" readonly class="w-full px-2 py-1.5 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-500 focus:outline-none cursor-not-allowed">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="status" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status para Pagamento</label>
+                                <select id="status" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-blue-500">
+                                    <option value="A Pagar">A Pagar</option>
+                                    <option value="Auditada">Auditada</option>
+                                    <option value="Paga">Paga</option>
+                                </select>
+                            </div>
+
+                            <div class="flex gap-2 pt-2">
+                                <button type="button" id="btn-cancelar-edicao" class="hidden w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2.5 rounded-xl text-sm transition-all" onclick="resetarFormulario()">Cancelar</button>
+                                <button type="button" onclick="salvarRegistro()" id="btn-enviar" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-all text-sm font-semibold shadow">
+                                    <i class="fa-solid fa-floppy-disk"></i> Salvar Registro
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm xl:col-span-2 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-1">Distribuição Financeira</h3>
+                            <p class="text-xs text-slate-400">Proporção por estado de liquidação das contas (Repasse)</p>
+                        </div>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="doughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100"><h3 class="text-lg font-bold text-slate-900">Histórico de Lançamentos</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[1100px]">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-400 uppercase text-xs font-semibold border-b border-slate-100">
+                                    <th class="py-4 px-4">Competência</th>
+                                    <th class="py-4 px-4">Prestador</th>
+                                    <th class="py-4 px-4">Setor / Grupo</th>
+                                    <th class="py-4 px-4 text-right">Vl. Faturado</th>
+                                    <th class="py-4 px-4 text-right">Vl. Auditado</th>
+                                    <th class="py-4 px-4 text-right">Vl. Repasse</th>
+                                    <th class="py-4 px-4 text-center">Atraso</th>
+                                    <th class="py-4 px-4 text-center">Status Pagamento</th>
+                                    <th class="py-4 px-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-corpo" class="divide-y divide-slate-100 text-sm font-medium text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        let meuGrafico = null;
+        let cacheContas = [];
+
+        // Inicializador seguro da base de dados local
+        if (!localStorage.getItem('db.json')) {
+            const estruturaInicial = {
+                ultimas_contas: [
+                    { timestamp: "ts_1", competencia: "03/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "LABORATÓRIO", grupo: "EXAMES", valor_faturado: 21426.69, valor_auditado: 8757.54, valor_repasse: 12669.15, atraso: 80, status: "A Pagar" },
+                    { timestamp: "ts_2", competencia: "03/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      grupo: "MÉDICOS", valor_faturado: 35448.92, valor_auditado: 5916.52, valor_repasse: 29532.40, atraso: 80, status: "A Pagar" },
+                    { timestamp: "ts_3", competencia: "02/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "LABORATÓRIO", grupo: "EXAMES", valor_faturado: 10647.05, valor_auditado: 1171.23, valor_repasse: 9475.82,  atraso: 111, status: "A Pagar" },
+                    { timestamp: "ts_4", competencia: "01/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      grupo: "MÉDICOS", valor_faturado: 17629.80, valor_auditado: 1333.00, valor_repasse: 16296.80, atraso: 139, status: "A Pagar" },
+                    { timestamp: "ts_5", competencia: "01/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      grupo: "MÉDICOS", valor_faturado: 4786.49,  valor_auditado: 3.42,    valor_repasse: 4783.07,  atraso: 139, status: "A Pagar" },
+                    { timestamp: "ts_6", competencia: "12/2024", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      grupo: "MÉDICOS", valor_faturado: 124003.71, valor_auditado: 11160.82, valor_repasse: 112842.89, atraso: 542, status: "A Pagar" },
+                    { timestamp: "ts_7", competencia: "12/2024", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMA",         grupo: "MÉDICOS", valor_faturado: 63007.23,  valor_auditado: 4325.49,  valor_repasse: 58681.74,  atraso: 544, status: "A Pagar" },
+                    { timestamp: "ts_8", competencia: "12/2025", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      grupo: "MÉDICOS", valor_faturado: 26888.07,  valor_auditado: 0.00,     valor_repasse: 26888.07,  atraso: 170, status: "A Pagar" },
+                    { timestamp: "ts_9", competencia: "12/2025", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      grupo: "MÉDICOS", valor_faturado: 8722.34,   valor_auditado: 0.00,     valor_repasse: 8722.34,   atraso: 170, status: "A Pagar" }
+                ]
+            };
+            localStorage.setItem('db.json', JSON.stringify(estruturaInicial));
+        }
+
+        function calcularDiasAtrasoAutomatico(competenciaStr, status) {
+            if (status === "Paga" || !competenciaStr) return 0;
+            const partes = competenciaStr.split('/');
+            if (partes.length !== 2) return 0;
+            const mes = parseInt(partes[0], 10);
+            const ano = parseInt(partes[1], 10);
+            if (isNaN(mes) || isNaN(ano) || mes < 1 || mes > 12) return 0;
+
+            const dataVencimento = new Date(ano, mes, 0); 
+            const dataHoje = new Date();
+            dataVencimento.setHours(0,0,0,0);
+            dataHoje.setHours(0,0,0,0);
+
+            if (dataHoje <= dataVencimento) return 0;
+            const diferencaTempo = dataHoje.getTime() - dataVencimento.getTime();
+            return Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+        }
+
+        function calcularValoresFormulario() {
+            const faturado = parseFloat(document.getElementById('valor_faturado').value) || 0;
+            const auditado = parseFloat(document.getElementById('valor_auditado').value) || 0;
+            
+            const repasse = faturado - auditado;
+            document.getElementById('valor_repasse').value = repasse >= 0 ? repasse.toFixed(2) : "0.00";
+
+            const comp = document.getElementById('competencia').value;
+            const stat = document.getElementById('status').value;
+            document.getElementById('dias_atraso').value = calcularDiasAtrasoAutomatico(comp, stat);
+        }
+
+        document.getElementById('valor_faturado').addEventListener('input', calcularValoresFormulario);
+        document.getElementById('valor_auditado').addEventListener('input', calcularValoresFormulario);
+        document.getElementById('competencia').addEventListener('input', calcularValoresFormulario);
+        document.getElementById('status').addEventListener('change', calcularValoresFormulario);
+
+        // Função Local para carregar os dados e renderizar os cards e gráficos
+        function carregarDashboard() {
+            const db = JSON.parse(localStorage.getItem('db.json')) || { ultimas_contas: [] };
+            cacheContas = db.ultimas_contas;
+
+            let totalAPagar = 0;
+            let totalAuditado = 0;
+            let totalPago = 0;
+
+            cacheContas.forEach(c => {
+                const repasse = parseFloat(c.valor_repasse) || 0;
+                const glosa = parseFloat(c.valor_auditado) || 0;
+
+                totalAuditado += glosa;
+
+                if (c.status === "A Pagar") totalAPagar += repasse;
+                else if (c.status === "Auditada") totalAPagar += repasse; // Auditada aguarda liberação financeira
+                else if (c.status === "Paga") totalPago += repasse;
+            });
+
+            // Atualização dos cards KPIs com a lógica unificada do Labdiag
+            document.getElementById('kpi-apagar').innerText = 'R$ ' + totalAPagar.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpi-auditado').innerText = 'R$ ' + totalAuditado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpi-pago').innerText = 'R$ ' + totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpi-recuperado').innerText = 'R$ ' + totalAuditado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            // Listagem de linhas na tabela histórica
+            const tabelaCorpo = document.getElementById('tabela-corpo');
+            if(cacheContas.length === 0) {
+                tabelaCorpo.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">Nenhum registro encontrado no sistema.</td></tr>`;
+            } else {
+                tabelaCorpo.innerHTML = cacheContas.map(conta => {
+                    let tagCor = conta.status === "Auditada" ? "bg-blue-50 text-blue-600" : (conta.status === "Paga" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600");
+                    const atraso = conta.status === "Paga" ? 0 : (calcularDiasAtrasoAutomatico(conta.competencia, conta.status) || parseInt(conta.atraso) || 0);
+                    
+                    return `
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-4 px-4 text-slate-600 font-semibold">${conta.competencia || '--'}</td>
+                            <td class="py-4 px-4 font-bold text-slate-900">${conta.prestador || '--'}</td>
+                            <td class="py-4 px-4 text-xs text-slate-500"><div>${conta.setor || '--'}</div><div>${conta.grupo || '--'}</div></td>
+                            <td class="py-4 px-4 text-right">R$ ${parseFloat(conta.valor_faturado || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-4 px-4 text-right text-slate-600">R$ ${parseFloat(conta.valor_auditado || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-4 px-4 text-right font-bold text-slate-900">R$ ${parseFloat(conta.valor_repasse || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td class="py-4 px-4 text-center">${atraso > 0 ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded text-xs font-bold">${atraso} dias</span>` : '-'}</td>
+                            <td class="py-4 px-4 text-center"><span class="${tagCor} px-3 py-1 rounded-full text-xs font-bold">${conta.status}</span></td>
+                            <td class="py-4 px-4 text-center space-x-1">
+                                <button type="button" onclick="prepararEdicao('${conta.timestamp}')" class="text-blue-500 hover:text-blue-700 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button type="button" onclick="excluirRegisto('${conta.timestamp}')" class="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Atualização do gráfico de rosca (Doughnut) de forma dinâmica
+            if (totalAPagar > 0 || totalAuditado > 0 || totalPago > 0) {
+                const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+                if (meuGrafico) meuGrafico.destroy();
+                
+                meuGrafico = new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['A Pagar', 'Auditado', 'Pago'],
+                        datasets: [{
+                            data: [totalAPagar, totalAuditado, totalPago],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'],
+                            borderWidth: 4,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '74%' }
+                });
+            } else {
+                if (meuGrafico) meuGrafico.destroy();
+            }
+        }
+
+        function prepararEdicao(timestampId) {
+            const conta = cacheContas.find(c => c.timestamp === timestampId);
+            if (!conta) return;
+
+            document.getElementById('edit-timestamp').value = conta.timestamp;
+            document.getElementById('competencia').value = conta.competencia;
+            document.getElementById('prestador').value = conta.prestador;
+            document.getElementById('setor').value = conta.setor;
+            document.getElementById('grupo').value = conta.grupo || '';
+            document.getElementById('valor_faturado').value = conta.valor_faturado;
+            document.getElementById('valor_auditado').value = conta.valor_auditado;
+            document.getElementById('valor_repasse').value = conta.valor_repasse;
+            document.getElementById('status').value = conta.status;
+
+            calcularValoresFormulario();
+
+            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> Editando Lançamento`;
+            document.getElementById('btn-enviar').className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 rounded-xl text-sm font-semibold transition-all";
+            document.getElementById('btn-cancelar-edicao').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetarFormulario() {
+            document.getElementById('competencia').value = '';
+            document.getElementById('dias_atraso').value = '';
+            document.getElementById('prestador').value = '';
+            document.getElementById('setor').value = '';
+            document.getElementById('grupo').value = '';
+            document.getElementById('valor_faturado').value = '';
+            document.getElementById('valor_auditado').value = '';
+            document.getElementById('valor_repasse').value = '';
+            document.getElementById('status').value = 'A Pagar';
+            
+            document.getElementById('edit-timestamp').value = '';
+            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-file-circle-plus text-blue-600"></i> Lançamento e Conciliação`;
+            document.getElementById('btn-enviar').className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm font-semibold transition-all";
+            document.getElementById('btn-cancelar-edicao').classList.add('hidden');
+        }
+
+        // Função que salva no LocalStorage de forma unificada
+        function salvarRegistro() {
+            const prestador = document.getElementById('prestador').value.toUpperCase();
+            const competencia = document.getElementById('competencia').value;
+            const valor_faturado = document.getElementById('valor_faturado').value;
+            const status = document.getElementById('status').value;
+
+            if(!prestador || !competencia || !valor_faturado) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            const faturadoNum = parseFloat(valor_faturado) || 0;
+            const auditadoNum = parseFloat(document.getElementById('valor_auditado').value) || 0;
+            const repasseNum = faturadoNum - auditadoNum;
+            const timestampExistente = document.getElementById('edit-timestamp').value;
+
+            const dadosFormulario = {
+                timestamp: timestampExistente ? timestampExistente : 'ts_' + Date.now(),
+                competencia: competencia,
+                atraso: calcularDiasAtrasoAutomatico(competencia, status), 
+                prestador: prestador,
+                setor: document.getElementById('setor').value.toUpperCase(),
+                grupo: document.getElementById('grupo').value.toUpperCase(),
+                valor_faturado: faturadoNum,
+                valor_auditado: auditadoNum,
+                valor_repasse: repasseNum >= 0 ? repasseNum : 0,
+                status: status
+            };
+
+            let db = JSON.parse(localStorage.getItem('db.json')) || { ultimas_contas: [] };
+
+            if (timestampExistente) {
+                const idx = db.ultimas_contas.findIndex(c => c.timestamp === timestampExistente);
+                if (idx !== -1) db.ultimas_contas[idx] = dadosFormulario;
+            } else {
+                db.ultimas_contas.unshift(dadosFormulario);
+            }
+
+            localStorage.setItem('db.json', JSON.stringify(db));
+            resetarFormulario();
+            carregarDashboard();
+        }
+
+        // Função de exclusão direta na persistência do LocalStorage
+        function excluirRegisto(timestampId) {
+            if (!confirm('Excluir este lançamento permanentemente?')) return;
+            
+            let db = JSON.parse(localStorage.getItem('db.json')) || { ultimas_contas: [] };
+            db.ultimas_contas = db.ultimas_contas.filter(c => c.timestamp !== timestampId);
+            
+            localStorage.setItem('db.json', JSON.stringify(db));
+            carregarDashboard();
+        }
+
+        // Inicialização inicial da tela
+        carregarDashboard();
+    </script>
+</body>
+</html>
