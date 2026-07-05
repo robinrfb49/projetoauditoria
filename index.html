@@ -68,7 +68,14 @@
                     <button onclick="alternarAba('aba-extrato')" id="btn-aba-extrato" class="w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer">
                         <i class="fa-solid fa-file-signature w-5"></i> Extrato de Auditoria
                     </button>
-                    <button onclick="exportarJson()" class="w-full flex items-center gap-3 text-emerald-400 hover:bg-emerald-950/40 hover:text-emerald-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-4 border border-emerald-800/40 bg-emerald-950/10">
+                    
+                    <input type="file" id="input-importar-json" accept=".json" onchange="processarImportacaoJson(event)" class="hidden">
+                    
+                    <button onclick="document.getElementById('input-importar-json').click()" class="w-full flex items-center gap-3 text-blue-400 hover:bg-blue-950/40 hover:text-blue-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-4 border border-blue-800/40 bg-blue-950/10">
+                        <i class="fa-solid fa-upload w-5"></i> Importar DB.json
+                    </button>
+
+                    <button onclick="exportarJson()" class="w-full flex items-center gap-3 text-emerald-400 hover:bg-emerald-950/40 hover:text-emerald-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-2 border border-emerald-800/40 bg-emerald-950/10">
                         <i class="fa-solid fa-download w-5"></i> Exportar DB.json
                     </button>
                     <button onclick="logout();" class="w-full flex items-center gap-3 text-red-400 hover:bg-red-950/40 hover:text-red-300 px-4 py-3 rounded-lg font-medium transition-all mt-8 border-t border-slate-800/60 pt-4 text-left cursor-pointer">
@@ -265,7 +272,7 @@
         let chartEvolucao = null, chartDonutStatus = null;
         let todasContasLocais = [];
 
-        // Inicializa estrutura db.json populada estritamente com os dados reais de image_50227c.png
+        // Inicializa estrutura db.json populada estritamente com os dados reais
         if (!localStorage.getItem('db.json') || JSON.parse(localStorage.getItem('db.json')).ultimas_contas.length <= 6) {
             const estruturaInicial = {
                 ultimas_contas: [
@@ -348,7 +355,7 @@
             
             let totalFaturado = 0;   
             let totalAuditadoGlosa = 0;  
-            let totalRepasseLiquido = 0;      
+            let totalRepasseLiquido = 0;       
             let mapaGlosasPorPrestador = {};
 
             todasContasLocais.forEach(c => {
@@ -363,7 +370,7 @@
                 mapaGlosasPorPrestador[c.prestador] += glosa;
             });
 
-            // Sincronização dos KPIs principais baseados nos 9 lotes
+            // Sincronização dos KPIs principais baseados nos lotes
             document.getElementById('dash-apagar').innerText = 'R$ ' + totalRepasseLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('dash-auditado').innerText = 'R$ 0,00';
             document.getElementById('dash-pago').innerText = 'R$ 0,00';
@@ -427,7 +434,6 @@
         }
 
         function renderizarTabelas(totFat, totAud, totRep) {
-            // Últimas Atividades Processadas (Exibir os 5 lotes de competências recentes de 2026)
             const corpoDash = document.getElementById('dash-movimentacoes');
             const competentes2026 = todasContasLocais.filter(x => x.competencia.endsWith("2026"));
             
@@ -441,7 +447,6 @@
                 </tr>`;
             }).join('');
 
-            // Totais do rodapé da tabela de Extrato completo
             document.getElementById('tot-foot-faturado').innerText = 'R$ ' + totFat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('tot-foot-auditado').innerText = 'R$ ' + totAud.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('tot-foot-repasse').innerText = 'R$ ' + totRep.toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -546,6 +551,36 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        // NOVA FUNÇÃO: PROCESSAR IMPORTAÇÃO DO ARQUIVO JSON DO USUÁRIO
+        function processarImportacaoJson(event) {
+            const arquivo = event.target.files[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
+            leitor.onload = function(e) {
+                try {
+                    const conteudoJson = JSON.parse(e.target.result);
+                    
+                    // Validação simples da estrutura esperada
+                    if (conteudoJson && Array.isArray(conteudoJson.ultimas_contas)) {
+                        localStorage.setItem('db.json', JSON.stringify(conteudoJson));
+                        alert('Base de dados atualizada com sucesso!');
+                        
+                        // Recarrega os dados e os gráficos dinamicamente na tela
+                        carregarDadosCompletos();
+                        
+                        // Limpa o valor do input para permitir selecionar o mesmo arquivo novamente se necessário
+                        event.target.value = '';
+                    } else {
+                        alert('Formato inválido! O arquivo precisa conter o objeto "ultimas_contas".');
+                    }
+                } catch (erro) {
+                    alert('Erro ao ler o arquivo JSON. Certifique-se de que ele está bem formatado.');
+                }
+            };
+            leitor.readAsText(arquivo);
         }
     </script>
 </body>
