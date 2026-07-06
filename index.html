@@ -14,21 +14,86 @@
         .neon-text-green { text-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
         .neon-text-red { text-shadow: 0 0 6px rgba(248, 113, 113, 0.6); }
 
-        /* Estilos para uma impressão limpa (Oculta menus, cabeçalhos e botões no papel/PDF) */
+        /* Estilos avançados para uma impressão limpa e com alto contraste */
         @media print {
-            body { background: white; color: black; }
-            .w-64, header, .bg-slate-50, .no-print, button, input, select { display: none !important; }
-            .flex-1 { width: 100% !important; padding: 0 !important; overflow: visible !important; }
-            main { padding: 0 !important; max-width: 100% !important; }
-            .bg-white { border: none !important; shadow: none !important; }
-            table { font-size: 10px !important; width: 100% !important; border-collapse: collapse !important; }
-            th { background-color: #0f172a !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            tr { page-break-inside: avoid; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-scheme: light !important;
+            }
+            
+            body { 
+                background: #ffffff !important; 
+                color: #000000 !important; 
+            }
+            
+            .w-64, header, .bg-slate-50, .no-print, button, input, select, .ticker-container { 
+                display: none !important; 
+            }
+            
+            .flex-1, #estrutura-sistema, #corpo-principal { 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                overflow: visible !important; 
+                display: block !important; 
+                height: auto !important;
+            }
+            
+            main { 
+                padding: 0 !important; 
+                max-width: 100% !important; 
+            }
+            
+            .bg-white, .rounded-2xl, .border, .shadow-sm, .shadow-md { 
+                border: none !important; 
+                box-shadow: none !important; 
+                background: transparent !important;
+            }
+            
+            table { 
+                font-size: 11px !important; 
+                width: 100% !important; 
+                border-collapse: collapse !important; 
+                color: #000000 !important;
+            }
+            
+            th { 
+                background-color: #0f172a !important; 
+                color: #ffffff !important; 
+                padding: 8px !important;
+            }
+            
+            td { 
+                color: #000000 !important; 
+                padding: 6px !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+            
+            td span, td font, .font-mono, .text-slate-500, .text-slate-600, .text-slate-900 {
+                color: #000000 !important;
+            }
+            
+            .text-red-500, .text-red-600 {
+                color: #850000 !important; 
+                font-weight: bold !important;
+            }
+            
+            .text-blue-600, .text-blue-700 {
+                color: #002d7a !important;
+                font-weight: bold !important;
+            }
+
+            tr { 
+                page-break-inside: avoid !important; 
+            }
         }
     </style>
 </head>
-<body class="bg-slate-900 font-sans text-slate-800 h-screen flex items-center justify-center m-0 overflow-hidden" id="corpo-principal">
+<body class="bg-slate-900 font-sans text-slate-800 min-h-screen flex items-center justify-center m-0" id="corpo-principal">
 
+    <!-- Painel de Login de Segurança -->
     <div id="bloco-autenticacao" class="w-full max-w-md mx-4 transition-all duration-300">
         <div class="bg-white p-8 rounded-2xl shadow-2xl border border-slate-800/10">
             <div class="text-center mb-8">
@@ -61,10 +126,12 @@
         </div>
     </div>
 
-    <div id="estrutura-sistema" class="w-full h-full flex overflow-hidden hidden bg-slate-50"></div>
+    <!-- Container do Sistema Protegido -->
+    <div id="estrutura-sistema" class="w-full h-screen flex overflow-hidden hidden bg-slate-50"></div>
 
     <template id="template-admin">
-        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between p-5 border-r border-slate-800 no-print">
+        <!-- Sidebar Principal Estável -->
+        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between p-5 border-r border-slate-800 no-print shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-8">
                     <div class="bg-blue-600 p-2 rounded-lg text-white font-bold text-xl shadow-md">LD</div>
@@ -98,16 +165,19 @@
             <div class="text-sm text-slate-500">v6.3.0 • Real dataset</div>
         </div>
 
+        <!-- Área de Conteúdo Flexível (Preve quebras e estouros) -->
         <div class="flex-1 flex flex-col overflow-y-auto">
-            <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm sticky top-0 z-50 no-print">
+            <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm sticky top-0 z-50 no-print shrink-0">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900" id="titulo-pagina">Métricas Analíticas e Visão Geral</h1>
                     <p class="text-sm text-slate-500" id="subtitulo-pagina">Indicadores avançados de desempenho de glosas e auditoria em tempo real</p>
                 </div>
-                <div class="w-10 h-10 bg-blue-100 text-blue-600 font-semibold rounded-full flex items-center justify-center border border-blue-200">RB</div>
+                <div class="w-10 h-10 bg-blue-100 text-blue-600 font-semibold rounded-full flex items-center justify-center border border-blue-200 shrink-0">RB</div>
             </header>
 
-            <main class="p-8 space-y-6 max-w-7xl w-full mx-auto">
+            <main class="p-8 space-y-6 max-w-7xl w-full mx-auto flex-1">
+                
+                <!-- SEÇÃO 1: DASHBOARD ANALÍTICO -->
                 <div id="aba-dashboard" class="space-y-6 secao-sistema">
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -123,40 +193,40 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                            <div class="bg-blue-50 text-blue-600 p-3 rounded-xl"><i class="fa-solid fa-percent text-lg"></i></div>
+                            <div class="bg-blue-50 text-blue-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-percent text-lg"></i></div>
                             <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Índice de Glosa</p><h4 class="text-base font-black text-slate-900" id="card-idx-glosa">0.0%</h4></div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                            <div class="bg-amber-50 text-amber-600 p-3 rounded-xl"><i class="fa-solid fa-hourglass-half text-lg"></i></div>
+                            <div class="bg-amber-50 text-amber-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-hourglass-half text-lg"></i></div>
                             <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Atraso Médio</p><h4 class="text-base font-black text-slate-900" id="card-atraso">0 dias</h4></div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                            <div class="bg-purple-50 text-purple-600 p-3 rounded-xl"><i class="fa-solid fa-receipt text-lg"></i></div>
+                            <div class="bg-purple-50 text-purple-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-receipt text-lg"></i></div>
                             <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ticket Médio/Conta</p><h4 class="text-base font-black text-slate-900" id="card-ticket">R$ 0,00</h4></div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                            <div class="bg-slate-50 text-slate-600 p-3 rounded-xl"><i class="fa-solid fa-folder-open text-lg"></i></div>
+                            <div class="bg-slate-50 text-slate-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-folder-open text-lg"></i></div>
                             <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Faturas em Aberto</p><h4 class="text-base font-black text-slate-900" id="card-abertas">0 faturas</h4></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative min-h-[200px]">
                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Meta Operacional: Eficiência de Glosa</h3>
                             <div class="w-full max-w-[240px] h-32 relative"><canvas id="gaugeGlosa"></canvas><div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center"><span class="text-2xl font-black text-slate-900" id="txt-gauge-glosa">0.0%</span></div></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative min-h-[200px]">
                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Meta de Liquidação: Repasses Pagos</h3>
                             <div class="w-full max-w-[240px] h-32 relative"><canvas id="gaugePago"></canvas><div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center"><span class="text-2xl font-black text-slate-900" id="txt-gauge-pago">0.0%</span></div></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 min-h-[300px]">
                             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Evolução Mensal: Cobrado x Liberado</h3>
-                            <div class="h-64"><canvas id="graficoEvolucao"></canvas></div>
+                            <div class="h-64 relative"><canvas id="graficoEvolucao"></canvas></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center min-h-[300px]">
                             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 w-full text-left">Representatividade por Status</h3>
                             <div class="h-64 w-full relative"><canvas id="graficoDonutStatus"></canvas></div>
                         </div>
@@ -171,12 +241,12 @@
                         </div>
 
                         <div class="bg-white rounded-2xl border border-slate-200 shadow-md lg:col-span-2 overflow-hidden flex flex-col justify-between">
-                            <div class="p-6 pb-2 flex justify-between items-center">
+                            <div class="p-6 pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                 <h3 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Últimas Atividades Processadas (Competências Recentes)</h3>
                                 <button onclick="alternarAba('aba-extrato')" class="text-blue-600 text-xs font-bold hover:underline cursor-pointer">Ver Todos os Extratos</button>
                             </div>
-                            <div class="overflow-x-auto flex-1">
-                                <table class="w-full text-left border-collapse text-xs">
+                            <div class="overflow-x-auto w-full">
+                                <table class="w-full min-w-[600px] text-left border-collapse text-xs">
                                     <thead>
                                         <tr class="bg-slate-50 text-slate-400 uppercase text-[10px] font-bold tracking-wider border-b border-slate-100">
                                             <th class="py-3 px-6">Prestador</th>
@@ -193,6 +263,7 @@
                     </div>
                 </div>
 
+                <!-- SEÇÃO 2: FORMULÁRIO OPERACIONAL -->
                 <div id="aba-contas" class="space-y-6 secao-sistema hidden">
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
                         <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
@@ -240,43 +311,46 @@
                     </div>
                 </div>
 
+                <!-- SEÇÃO 3: EXTRATO CONSOLIDADO (FOCO DA IMPRESSÃO) -->
                 <div id="aba-extrato" class="space-y-6 secao-sistema hidden">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-end gap-4 no-print">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-end gap-4 no-print">
                         <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Prestador</label><input type="text" id="filtro-nome" oninput="filtrarExtrato()" placeholder="Buscar..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
                         <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Competência</label><select id="filtro-comp" onchange="filtrarExtrato()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"><option value="Todas">Todas</option><option value="03/2026">03/2026</option><option value="02/2026">02/2026</option><option value="01/2026">01/2026</option><option value="12/2025">12/2025</option><option value="12/2024">12/2024</option></select></div>
                         <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Status</label><select id="filtro-status" onchange="filtrarExtrato()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"><option value="Todos">Todos</option><option value="A Pagar">A Pagar</option><option value="Auditada">Auditada</option><option value="Paga">Paga</option></select></div>
-                        <button onclick="window.print()" class="bg-slate-900 text-white font-bold py-2 px-5 rounded-xl text-sm hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-2 h-[38px] shadow-xs">
+                        <button onclick="window.print()" class="bg-slate-900 text-white font-bold py-2 px-5 rounded-xl text-sm hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-2 h-[38px] shadow-xs w-full md:w-auto justify-center">
                             <i class="fa-solid fa-print"></i> Imprimir Extrato
                         </button>
                     </div>
 
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900 text-slate-300 uppercase text-[10px] font-bold border-b border-slate-800">
-                                    <th class="py-3 px-5 text-center">Competência</th>
-                                    <th class="py-3 px-5">Prestador</th>
-                                    <th class="py-3 px-5">Setor</th>
-                                    <th class="py-3 px-5 text-right">Faturado</th>
-                                    <th class="py-3 px-5 text-right">Auditado</th>
-                                    <th class="py-3 px-5 text-right">Repasse</th>
-                                    <th class="py-3 px-5 text-center">Atraso</th>
-                                    <th class="py-3 px-5 text-center">Status</th>
-                                    <th class="py-3 px-5 text-center no-print">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela-extrato" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
-                            <tfoot>
-                                <tr class="bg-blue-50/70 font-black text-slate-900 text-xs border-t-2 border-slate-200">
-                                    <td colspan="3" class="py-4 px-5 uppercase">Total Consolidado do Extrato</td>
-                                    <td class="py-4 px-5 text-right text-slate-900" id="tot-foot-faturado">R$ 0,00</td>
-                                    <td class="py-4 px-5 text-right text-red-600" id="tot-foot-auditado">R$ 0,00</td>
-                                    <td class="py-4 px-5 text-right text-blue-700" id="tot-foot-repasse">R$ 0,00</td>
-                                    <td colspan="2" class="no-print"></td>
-                                    <td class="hidden print:table-cell"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full min-w-[850px] text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900 text-slate-300 uppercase text-[10px] font-bold border-b border-slate-800">
+                                        <th class="py-3 px-5 text-center">Competência</th>
+                                        <th class="py-3 px-5">Prestador</th>
+                                        <th class="py-3 px-5">Setor</th>
+                                        <th class="py-3 px-5 text-right">Faturado</th>
+                                        <th class="py-3 px-5 text-right">Auditado</th>
+                                        <th class="py-3 px-5 text-right">Repasse</th>
+                                        <th class="py-3 px-5 text-center">Atraso</th>
+                                        <th class="py-3 px-5 text-center">Status</th>
+                                        <th class="py-3 px-5 text-center no-print">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-extrato" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
+                                <tfoot>
+                                    <tr class="bg-blue-50/70 font-black text-slate-900 text-xs border-t-2 border-slate-200">
+                                        <td colspan="3" class="py-4 px-5 uppercase">Total Consolidado do Extrato</td>
+                                        <td class="py-4 px-5 text-right text-slate-900" id="tot-foot-faturado">R$ 0,00</td>
+                                        <td class="py-4 px-5 text-right text-red-600" id="tot-foot-auditado">R$ 0,00</td>
+                                        <td class="py-4 px-5 text-right text-blue-700" id="tot-foot-repasse">R$ 0,00</td>
+                                        <td colspan="2" class="no-print"></td>
+                                        <td class="hidden print:table-cell"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -370,9 +444,10 @@
             
             let totalFaturado = 0;   
             let totalAuditadoGlosa = 0;  
-            let totalRepasseLiquido = 0;       
+            let totalRepasseLiquido = 0;        
             let totalAtraso = 0;
             let qtdComAtraso = 0;
+            let totalValorPago = 0;
             
             let contagemStatus = { "A Pagar": 0, "Auditada": 0, "Paga": 0 };
             let mapaGlosasPorSetor = {};
@@ -385,6 +460,10 @@
                 totalFaturado += fat;
                 totalAuditadoGlosa += glosa;
                 totalRepasseLiquido += (fat - glosa);
+
+                if (c.status === "Paga") {
+                    totalValorPago += (fat - glosa);
+                }
 
                 if(c.atraso) {
                     totalAtraso += parseInt(c.atraso);
@@ -402,10 +481,11 @@
             const idxGlosaGeral = totalFaturado > 0 ? ((totalAuditadoGlosa / totalFaturado) * 100) : 0;
             const mediaAtraso = qtdComAtraso > 0 ? Math.round(totalAtraso / qtdComAtraso) : 0;
             const ticketMedio = todasContasLocais.length > 0 ? (totalFaturado / todasContasLocais.length) : 0;
+            const percentualPago = totalRepasseLiquido > 0 ? ((totalValorPago / totalRepasseLiquido) * 100) : 0;
 
             document.getElementById('dash-apagar').innerText = 'R$ ' + totalRepasseLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('dash-auditado').innerText = 'R$ ' + totalAuditadoGlosa.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('dash-pago').innerText = 'R$ 0,00'; 
+            document.getElementById('dash-pago').innerText = 'R$ ' + totalValorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2}); 
             document.getElementById('dash-recuperado').innerText = 'R$ ' + totalAuditadoGlosa.toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
             document.getElementById('card-idx-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
@@ -435,8 +515,9 @@
             }).join('');
 
             document.getElementById('txt-gauge-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
+            document.getElementById('txt-gauge-pago').innerText = percentualPago.toFixed(1) + '%';
 
-            renderizarGauges(idxGlosaGeral, 0);
+            renderizarGauges(idxGlosaGeral, percentualPago);
             renderizarGraficosAvancados(contagemStatus);
             renderizarTabelas(totalFaturado, totalAuditadoGlosa, totalRepasseLiquido);
         }
@@ -447,7 +528,7 @@
             if (gaugeChartGlosa) gaugeChartGlosa.destroy();
             gaugeChartGlosa = new Chart(document.getElementById('gaugeGlosa').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [glosa, Math.max(0, 100 - glosa)], backgroundColor: ['#3b82f6', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
             if (gaugeChartPago) gaugeChartPago.destroy();
-            gaugeChartPago = new Chart(document.getElementById('gaugePago').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [pago, 100 - pago], backgroundColor: ['#e2e8f0', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
+            gaugeChartPago = new Chart(document.getElementById('gaugePago').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [pago, Math.max(0, 100 - pago)], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
         }
 
         function renderizarGraficosAvancados(statusData) {
@@ -608,7 +689,6 @@
             leitor.onload = function(e) {
                 try {
                     const conteudoJson = JSON.parse(e.target.result);
-                    
                     if (conteudoJson && Array.isArray(conteudoJson.ultimas_contas)) {
                         localStorage.setItem('db.json', JSON.stringify(conteudoJson));
                         carregarDadosCompletos();
