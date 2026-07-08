@@ -121,7 +121,7 @@
                     <button onclick="exportarJson()" class="w-full flex items-center gap-3 text-emerald-400 hover:bg-emerald-950/40 hover:text-emerald-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-2 border border-emerald-800/40 bg-emerald-950/10">
                         <i class="fa-solid fa-download w-5"></i> Exportar DB.json
                     </button>
-                    <button onclick="logout();" class="w-full flex items-center gap-3 text-red-400 hover:bg-red-950/40 hover:text-red-300 px-4 py-3 rounded-lg font-medium transition-all mt-8 border-t border-slate-800/60 pt-4 text-left cursor-pointer">
+                    <button onclick="logout()" class="w-full flex items-center gap-3 text-red-400 hover:bg-red-950/40 hover:text-red-300 px-4 py-3 rounded-lg font-medium transition-all mt-8 border-t border-slate-800/60 pt-4 text-left cursor-pointer">
                         <i class="fa-solid fa-arrow-right-from-bracket w-5"></i> Sair com Segurança
                     </button>
                 </nav>
@@ -486,6 +486,16 @@
             }
         });
 
+        document.getElementById('form-login').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (document.getElementById('login-user').value === 'admin' && document.getElementById('login-pass').value === '1234') {
+                localStorage.setItem('labdiag_logado', 'true');
+                inicializarEcossistemaProtegido();
+            } else {
+                document.getElementById('erro-autenticacao').classList.remove('hidden');
+            }
+        });
+
         function inicializarEcossistemaProtegido() {
             document.getElementById('bloco-autenticacao').remove();
             document.getElementById('corpo-principal').className = "bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden m-0";
@@ -506,7 +516,12 @@
             mapearEventosInjetados();
         }
 
-        function alternarAba(idAba) {
+        window.logout = function() {
+            localStorage.removeItem('labdiag_logado');
+            window.location.reload();
+        };
+
+        window.alternarAba = function(idAba) {
             document.querySelectorAll('.secao-sistema').forEach(s => s.classList.add('hidden'));
             document.getElementById(idAba).classList.remove('hidden');
 
@@ -527,7 +542,7 @@
                         : "w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer";
                 }
             });
-        }
+        };
 
         function carregarDadosCompletos() {
             const db = JSON.parse(localStorage.getItem('db.json'));
@@ -595,15 +610,17 @@
                 .sort((a, b) => b.totalGlosa - a.totalGlosa);
 
             const containerTopGlosas = document.getElementById('container-top-glosas');
-            containerTopGlosas.innerHTML = rankingOrdenado.map((s, index) => {
-                return `<div class="flex items-center justify-between bg-slate-50 border border-slate-100 p-3 rounded-xl shadow-xs">
-                            <div class="flex items-center gap-2 truncate">
-                                <span class="bg-blue-100 text-blue-700 font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shrink-0">${index + 1}º</span>
-                                <span class="text-xs font-bold text-slate-700 tracking-tight truncate max-w-[150px]">${s.nome}</span>
-                            </div>
-                            <span class="text-xs font-black text-red-600 shrink-0">R$ ${s.totalGlosa.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
-                        </div>`;
-            }).join('');
+            if(containerTopGlosas) {
+                containerTopGlosas.innerHTML = rankingOrdenado.map((s, index) => {
+                    return `<div class="flex items-center justify-between bg-slate-50 border border-slate-100 p-3 rounded-xl shadow-xs">
+                                <div class="flex items-center gap-2 truncate">
+                                    <span class="bg-blue-100 text-blue-700 font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shrink-0">${index + 1}º</span>
+                                    <span class="text-xs font-bold text-slate-700 tracking-tight truncate max-w-[150px]">${s.nome}</span>
+                                </div>
+                                <span class="text-xs font-black text-red-600 shrink-0">R$ ${s.totalGlosa.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                            </div>`;
+                }).join('');
+            }
 
             document.getElementById('txt-gauge-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
             document.getElementById('txt-gauge-pago').innerText = percentualPago.toFixed(1) + '%';
@@ -742,7 +759,7 @@
             }
         }
 
-        function renderPainelTarefas() {
+        window.renderPainelTarefas = function() {
             const tbody = document.getElementById('container-tarefas');
             if(!tbody) return;
             tbody.innerHTML = '';
@@ -789,7 +806,7 @@
             calculateTaskMetrics();
             updateTaskCharts();
             localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
-        }
+        };
 
         function calculateTaskMetrics() {
             const tot = painelTarefas.length;
@@ -797,12 +814,18 @@
             const done = painelTarefas.filter(t => t.status === 'done').length;
             const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
 
-            document.getElementById('kpi-task-total').innerText = tot;
-            document.getElementById('kpi-task-stuck').innerText = stuck;
-            document.getElementById('kpi-task-progress').innerText = `${pct}%`;
-            document.getElementById('task-bar-fill').style.width = `${pct}%`;
+            const totalEl = document.getElementById('kpi-task-total');
+            if(totalEl) totalEl.innerText = tot;
             
-            // Atualiza o texto do Velocímetro (Gauge)
+            const stuckEl = document.getElementById('kpi-task-stuck');
+            if(stuckEl) stuckEl.innerText = stuck;
+            
+            const progressEl = document.getElementById('kpi-task-progress');
+            if(progressEl) progressEl.innerText = `${pct}%`;
+            
+            const fillEl = document.getElementById('task-bar-fill');
+            if(fillEl) fillEl.style.width = `${pct}%`;
+            
             const txtProgress = document.getElementById('txt-gauge-task-progress');
             if (txtProgress) txtProgress.innerText = `${pct}%`;
         }
@@ -878,18 +901,15 @@
             const done = painelTarefas.filter(t => t.status === 'done').length;
             const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
 
-            // Atualiza o Velocímetro de Tarefas
             gaugeTaskProgress.data.datasets[0].data = [pct, Math.max(0, 100 - pct)];
             gaugeTaskProgress.update();
 
-            // Atualiza Produtividade por Profissional (Barras)
             const countExecutores = {};
             painelTarefas.forEach(t => countExecutores[t.responsavel] = (countExecutores[t.responsavel] || 0) + 1);
             chartTaskProdutividade.data.labels = Object.keys(countExecutores);
             chartTaskProdutividade.data.datasets[0].data = Object.values(countExecutores);
             chartTaskProdutividade.update();
 
-            // Atualiza Instâncias de Supervisão (Rosca)
             const inst1 = painelTarefas.filter(t => t.instancia === '1a Instância').length;
             const inst2 = painelTarefas.filter(t => t.instancia === '2a Instância').length;
             const inst3 = painelTarefas.filter(t => t.instancia === '3a Instância').length;
@@ -931,7 +951,6 @@
                 alternarAba('aba-dashboard');
             });
 
-            // Evento de Criação da Nova Demanda com Todos os Indicadores Ativados
             document.getElementById('form-tarefa').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const nIn = document.getElementById('add-task-nome');
@@ -954,17 +973,16 @@
                 
                 emitTaskLog(`Nova demanda mapeada: "${nIn.value}" alocada em [${iIn.value}].`);
                 
-                // Resetando os inputs de texto e data
                 nIn.value = ''; 
                 rIn.value = '';
                 dIn.value = '';
                 
                 renderPainelTarefas();
             });
-            emitTaskLog("Mapeamento de processos operacionais atualizado.");
+            emitTaskLog("Mapeamento de processos operacionais updated.");
         }
 
-        function prepararEdicao(ts) {
+        window.prepararEdicao = function(ts) {
             const conta = todasContasLocais.find(c => c.timestamp === ts);
             if (!conta) return;
             document.getElementById('conta-timestamp').value = conta.timestamp;
@@ -979,18 +997,26 @@
             document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-file-pen text-amber-500 mr-1"></i> Editando Lançamento Ativo`;
             document.getElementById('indicador-modo').classList.remove('hidden');
             alternarAba('aba-contas');
-        }
+        };
 
-        function limparFormulario() {
+        window.limparFormulario = function() {
             document.getElementById('form-conciliacao').reset();
             document.getElementById('conta-timestamp').value = '';
             document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-file-circle-plus text-blue-600 mr-1"></i> Gestão e Lançamento de Faturas`;
             document.getElementById('indicador-modo').classList.add('hidden');
-        }
+        };
 
-        function exportarJson() {
-            const dadosEstáticos = localStorage.getItem('db.json');
-            const blob = new Blob([dadosEstáticos], { type: 'application/json' });
+        // EXPORTAÇÃO UNIFICADA: Salva faturas + tarefas no mesmo arquivo JSON
+        window.exportarJson = function() {
+            const dbFaturas = JSON.parse(localStorage.getItem('db.json')) || { ultimas_contas: [] };
+            
+            // Cria um super objeto consolidando faturas e quadro de tarefas
+            const backupCompleto = {
+                ultimas_contas: dbFaturas.ultimas_contas,
+                quadro_tarefas_backup: painelTarefas
+            };
+
+            const blob = new Blob([JSON.stringify(backupCompleto, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -999,9 +1025,10 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }
+        };
 
-        function processarImportacaoJson(event) {
+        // IMPORTAÇÃO UNIFICADA: Restaura faturas e tarefas de uma vez só
+        window.processarImportacaoJson = function(event) {
             const arquivo = event.target.files[0];
             if (!arquivo) return;
             const leitor = new FileReader();
@@ -1009,15 +1036,31 @@
                 try {
                     const conteudoJson = JSON.parse(e.target.result);
                     if (conteudoJson && Array.isArray(conteudoJson.ultimas_contas)) {
-                        localStorage.setItem('db.json', JSON.stringify(conteudoJson));
+                        
+                        // Restaura a parte de faturas
+                        const estruturaFaturas = { ultimas_contas: conteudoJson.ultimas_contas };
+                        localStorage.setItem('db.json', JSON.stringify(estruturaFaturas));
+                        
+                        // Restaura o quadro de tarefas se ele existir no arquivo importado
+                        if (conteudoJson.quadro_tarefas_backup && Array.isArray(conteudoJson.quadro_tarefas_backup)) {
+                            painelTarefas = conteudoJson.quadro_tarefas_backup;
+                            localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
+                        }
+
                         carregarDadosCompletos();
-                        alert('Base de dados updated!');
+                        renderPainelTarefas();
+                        
+                        alert('Base de dados completa (Faturas + Quadro de Tarefas) atualizada com sucesso!');
                         event.target.value = '';
-                    } else { alert('Formato inválido!'); }
-                } catch (erro) { alert('Erro ao ler o arquivo JSON.'); }
+                    } else { 
+                        alert('Formato de arquivo inválido!'); 
+                    }
+                } catch (erro) { 
+                    alert('Erro crítico ao processar o arquivo JSON unificado.'); 
+                }
             };
             leitor.readAsText(arquivo);
-        }
+        };
     </script>
 </body>
 </html>
