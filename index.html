@@ -14,6 +14,22 @@
         .neon-text-green { text-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
         .neon-text-red { text-shadow: 0 0 6px rgba(248, 113, 113, 0.6); }
 
+        /* Classes do Painel de Tarefas */
+        .monday-select { appearance: none; -webkit-appearance: none; text-align: center; font-weight: 800; color: white; cursor: pointer; transition: all 0.2s ease; border: none; }
+        .status-working { background-color: #fdab3d; }
+        .status-done { background-color: #00c875; }
+        .status-stuck { background-color: #e2445c; }
+        .status-backlog { background-color: #797e93; }
+        
+        .priority-high { background-color: #ef4444; }
+        .priority-medium { background-color: #a25ddc; }
+        .priority-low { background-color: #55596e; }
+
+        /* Cores de Instância */
+        .instance-1st { background-color: #0284c7; } /* Operacional */
+        .instance-2nd { background-color: #0f766e; } /* Tático */
+        .instance-3rd { background-color: #1e1b4b; } /* Estratégico - Robson Farias */
+
         /* Estilos avançados para uma impressão limpa e com alto contraste */
         @media print {
             * {
@@ -21,73 +37,18 @@
                 print-color-adjust: exact !important;
                 color-scheme: light !important;
             }
-            
-            body { 
-                background: #ffffff !important; 
-                color: #000000 !important; 
-            }
-            
-            .w-64, header, .bg-slate-50, .no-print, button, input, select, .ticker-container { 
-                display: none !important; 
-            }
-            
-            .flex-1, #estrutura-sistema, #corpo-principal { 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
-                overflow: visible !important; 
-                display: block !important; 
-                height: auto !important;
-            }
-            
-            main { 
-                padding: 0 !important; 
-                max-width: 100% !important; 
-            }
-            
-            .bg-white, .rounded-2xl, .border, .shadow-sm, .shadow-md { 
-                border: none !important; 
-                box-shadow: none !important; 
-                background: transparent !important;
-            }
-            
-            table { 
-                font-size: 11px !important; 
-                width: 100% !important; 
-                border-collapse: collapse !important; 
-                color: #000000 !important;
-            }
-            
-            th { 
-                background-color: #0f172a !important; 
-                color: #ffffff !important; 
-                padding: 8px !important;
-            }
-            
-            td { 
-                color: #000000 !important; 
-                padding: 6px !important;
-                border-bottom: 1px solid #e2e8f0 !important;
-            }
-            
-            td span, td font, .font-mono, .text-slate-500, .text-slate-600, .text-slate-900 {
-                color: #000000 !important;
-            }
-            
-            .text-red-500, .text-red-600 {
-                color: #850000 !important; 
-                font-weight: bold !important;
-            }
-            
-            .text-blue-600, .text-blue-700 {
-                color: #002d7a !important;
-                font-weight: bold !important;
-            }
-
-            tr { 
-                page-break-inside: avoid !important; 
-            }
+            body { background: #ffffff !important; color: #000000 !important; }
+            .w-64, header, .bg-slate-50, .no-print, button, input, select, .ticker-container { display: none !important; }
+            .flex-1, #estrutura-sistema, #corpo-principal { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; height: auto !important;}
+            main { padding: 0 !important; max-width: 100% !important; }
+            .bg-white, .rounded-2xl, .border, .shadow-sm, .shadow-md { border: none !important; box-shadow: none !important; background: transparent !important; }
+            table { font-size: 11px !important; width: 100% !important; border-collapse: collapse !important; color: #000000 !important; }
+            th { background-color: #0f172a !important; color: #ffffff !important; padding: 8px !important; }
+            td { color: #000000 !important; padding: 6px !important; border-bottom: 1px solid #e2e8f0 !important; }
+            td span, td font, .font-mono, .text-slate-500, .text-slate-600, .text-slate-900 { color: #000000 !important; }
+            .text-red-500, .text-red-600 { color: #850000 !important; font-weight: bold !important; }
+            .text-blue-600, .text-blue-700 { color: #002d7a !important; font-weight: bold !important; }
+            tr { page-break-inside: avoid !important; }
         }
     </style>
 </head>
@@ -141,6 +102,9 @@
                     <button onclick="alternarAba('aba-dashboard')" id="btn-aba-dashboard" class="w-full flex items-center gap-3 bg-slate-800 text-blue-400 px-4 py-3 rounded-lg font-medium text-left cursor-pointer">
                         <i class="fa-solid fa-chart-pie w-5"></i> Dashboard Central
                     </button>
+                    <button onclick="alternarAba('aba-tarefas')" id="btn-aba-tarefas" class="w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer">
+                        <i class="fa-solid fa-list-check w-5"></i> Quadro de Tarefas
+                    </button>
                     <button onclick="alternarAba('aba-contas')" id="btn-aba-contas" class="w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer">
                         <i class="fa-solid fa-file-invoice-dollar w-5"></i> Lançar Faturas
                     </button>
@@ -165,7 +129,7 @@
             <div class="text-sm text-slate-500">v6.3.0 • Real dataset</div>
         </div>
 
-        <!-- Área de Conteúdo Flexível (Preve quebras e estouros) -->
+        <!-- Área de Conteúdo Flexível -->
         <div class="flex-1 flex flex-col overflow-y-auto">
             <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm sticky top-0 z-50 no-print shrink-0">
                 <div>
@@ -179,12 +143,24 @@
                 
                 <!-- SEÇÃO 1: DASHBOARD ANALÍTICO -->
                 <div id="aba-dashboard" class="space-y-6 secao-sistema">
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md"><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">A Pagar Geral</p><h3 class="text-xl font-bold text-slate-900 mt-1" id="dash-apagar">R$ 0,00</h3></div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md"><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Auditado Retido</p><h3 class="text-xl font-bold text-slate-900 mt-1" id="dash-auditado">R$ 0,00</h3></div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md"><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pago Liquido</p><h3 class="text-xl font-bold text-slate-900 mt-1" id="dash-pago">R$ 0,00</h3></div>
-                        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-md bg-gradient-to-br from-emerald-50 to-white"><p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Total Recuperado</p><h3 class="text-xl font-bold text-emerald-600 mt-1" id="dash-recuperado">R$ 0,00</h3></div>
+                    <!-- GRID DE KPIS CONGELADOS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between shrink-0 overflow-hidden">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">A Pagar Geral</p>
+                            <h3 class="text-xl font-bold text-slate-900 mt-1 truncate" id="dash-apagar">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between shrink-0 overflow-hidden">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Auditado Retido</p>
+                            <h3 class="text-xl font-bold text-slate-900 mt-1 truncate" id="dash-auditado">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between shrink-0 overflow-hidden">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Total Pago Liquido</p>
+                            <h3 class="text-xl font-bold text-slate-900 mt-1 truncate" id="dash-pago">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-md bg-gradient-to-br from-emerald-50 to-white h-28 flex flex-col justify-between shrink-0 overflow-hidden">
+                            <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider truncate">Total Recuperado</p>
+                            <h3 class="text-xl font-bold text-emerald-600 mt-1 truncate" id="dash-recuperado">R$ 0,00</h3>
+                        </div>
                     </div>
 
                     <div class="bg-black border-y-2 border-blue-600 text-white text-xl font-mono py-4 tracking-wider ticker-container shadow-lg rounded-xl select-none">
@@ -263,7 +239,124 @@
                     </div>
                 </div>
 
-                <!-- SEÇÃO 2: FORMULÁRIO OPERACIONAL -->
+                <!-- SEÇÃO 2: QUADRO DE TAREFAS AVANÇADO (COM PRODUTIVIDADE, VELOCÍMETROS E INSTÂNCIAS) -->
+                <div id="aba-tarefas" class="space-y-6 secao-sistema hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Demandas Ativas</div>
+                            <div class="text-xl font-extrabold text-slate-900" id="kpi-task-total">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Gargalos / Travados</div>
+                            <div class="text-xl font-extrabold text-red-500" id="kpi-task-stuck">0</div>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 shadow-xs text-center">
+                            <div class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Eficiência de Entrega</div>
+                            <div class="text-xl font-extrabold text-emerald-600" id="kpi-task-progress">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- MÓDULO DE VELOCÍMETROS E PRODUTIVIDADE DE TAREFAS -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center relative min-h-[180px]">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center w-full">Velocímetro de Eficiência de Entrega</h4>
+                            <div class="w-full max-w-[200px] h-28 relative">
+                                <canvas id="gaugeTaskProgress"></canvas>
+                                <div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center">
+                                    <span class="text-xl font-black text-slate-900" id="txt-gauge-task-progress">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm min-h-[180px] flex flex-col justify-between">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 w-full">Produtividade / Carga de Trabalho por Profissional</h4>
+                            <div class="h-32 w-full relative"><canvas id="chartTaskProdutividade"></canvas></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm min-h-[180px] flex flex-col justify-between">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 w-full">Demandas Distribuidoras por Instância</h4>
+                            <div class="h-32 w-full relative"><canvas id="chartTaskInstancia"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-md space-y-5">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-3 gap-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500"><i class="fa-solid fa-arrow-down-short-wide text-blue-500 mr-1"></i> Fluxo de Processos & Escalabilidade de Instâncias</h3>
+                            <div class="w-44 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                                <div id="task-bar-fill" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+                            </div>
+                        </div>
+
+                        <!-- Formulário Customizado Avançado -->
+                        <form id="form-tarefa" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="lg:col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Descrição da Atividade</label>
+                                <input type="text" id="add-task-nome" required placeholder="Ex: Conciliação de glosa de materiais..." class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Fluxo / Setor</label>
+                                <select id="add-task-setor" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                                    <option value="Auditoria">Auditoria</option>
+                                    <option value="Faturamento">Faturamento</option>
+                                    <option value="SADT">SADT</option>
+                                    <option value="T.I. / Suporte">T.I. / Suporte</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Executor</label>
+                                <input type="text" id="add-task-responsavel" required placeholder="Nome do encarregado..." class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Supervisão / Instância</label>
+                                <select id="add-task-instancia" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                                    <option value="1a Instância">1ª Instância (Auditoria Interna)</option>
+                                    <option value="2a Instância">2ª Instância (Coord. Faturamento)</option>
+                                    <option value="3a Instância">3ª Instância (Robson Farias)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Prazo Final</label>
+                                <input type="date" id="add-task-data" required class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Prioridade</label>
+                                <select id="add-task-prio" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                                    <option value="Alta">Alta</option>
+                                    <option value="Média" selected>Média</option>
+                                    <option value="Baixa">Baixa</option>
+                                </select>
+                            </div>
+                            <div class="lg:col-span-2 flex items-end">
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition-all cursor-pointer shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Registrar e Encaminhar</button>
+                            </div>
+                        </form>
+
+                        <!-- Tabela Principal Monday Corporativo -->
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full min-w-[1000px] text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-slate-200">
+                                        <th class="py-3 px-4">Setor / Linha</th>
+                                        <th class="py-3 px-4">Item Operacional</th>
+                                        <th class="py-3 px-4">Executor</th>
+                                        <th class="py-3 px-4 text-center" style="width: 170px;">Instância de Supervisão</th>
+                                        <th class="py-3 px-4 text-center" style="width: 120px;">Prazo / Dia</th>
+                                        <th class="py-3 px-4 text-center" style="width: 110px;">Prioridade</th>
+                                        <th class="py-3 px-4 text-center" style="width: 120px;">Status</th>
+                                        <th class="py-3 px-4 text-center" style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="container-tarefas" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Log de Auditoria Exclusivo do Painel de Tarefas -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs font-mono text-[10px] text-slate-500">
+                        <div class="font-bold text-slate-700 mb-1 uppercase text-[11px]">Histórico de Alterações do Quadro</div>
+                        <div class="max-h-24 overflow-y-auto space-y-1" id="log-task-auditoria"></div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 3: FORMULÁRIO OPERACIONAL ANTIGO -->
                 <div id="aba-contas" class="space-y-6 secao-sistema hidden">
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
                         <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
@@ -311,7 +404,7 @@
                     </div>
                 </div>
 
-                <!-- SEÇÃO 3: EXTRATO CONSOLIDADO (FOCO DA IMPRESSÃO) -->
+                <!-- SEÇÃO 4: EXTRATO CONSOLIDADO ANTIGO -->
                 <div id="aba-extrato" class="space-y-6 secao-sistema hidden">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-end gap-4 no-print">
                         <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Prestador</label><input type="text" id="filtro-nome" oninput="filtrarExtrato()" placeholder="Buscar..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
@@ -360,7 +453,15 @@
     <script>
         let gaugeChartGlosa = null, gaugeChartPago = null;
         let chartEvolucao = null, chartDonutStatus = null;
+        let gaugeTaskProgress = null, chartTaskProdutividade = null, chartTaskInstancia = null;
         let todasContasLocais = [];
+
+        let painelTarefas = JSON.parse(localStorage.getItem('monday_standalone_tasks')) || [
+            { id: "tk_1", nome: "Auditoria Confirmação de Diárias", responsavel: "Ana Silva", instancia: "1a Instância", setor: "Auditoria", data: "2026-07-15", prioridade: "Alta", status: "working" },
+            { id: "tk_2", nome: "Ajuste Cadastral de Tabelas TUSS", responsavel: "Carlos Lima", instancia: "2a Instância", setor: "Faturamento", data: "2026-07-20", prioridade: "Média", status: "stuck" },
+            { id: "tk_3", nome: "Revisão Executiva de Glosas Críticas", responsavel: "Robson Farias", instancia: "3a Instância", setor: "Administração", data: "2026-07-05", prioridade: "Alta", status: "working" }
+        ];
+        let logsPainel = JSON.parse(localStorage.getItem('monday_standalone_logs')) || ["Ambiente analítico com velocímetros de tarefas ativado."];
 
         if (!localStorage.getItem('db.json') || JSON.parse(localStorage.getItem('db.json')).ultimas_contas.length === 0) {
             const estruturaInicial = {
@@ -385,16 +486,6 @@
             }
         });
 
-        document.getElementById('form-login').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (document.getElementById('login-user').value === 'admin' && document.getElementById('login-pass').value === '1234') {
-                localStorage.setItem('labdiag_logado', 'true');
-                inicializarEcossistemaProtegido();
-            } else {
-                document.getElementById('erro-autenticacao').classList.remove('hidden');
-            }
-        });
-
         function inicializarEcossistemaProtegido() {
             document.getElementById('bloco-autenticacao').remove();
             document.getElementById('corpo-principal').className = "bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden m-0";
@@ -406,14 +497,13 @@
 
             const scriptChart = document.createElement('script');
             scriptChart.src = "https://cdn.jsdelivr.net/npm/chart.js";
-            scriptChart.onload = () => { carregarDadosCompletos(); };
+            scriptChart.onload = () => { 
+                initTaskCharts();
+                carregarDadosCompletos(); 
+                renderPainelTarefas();
+            };
             document.head.appendChild(scriptChart);
             mapearEventosInjetados();
-        }
-
-        function logout() {
-            localStorage.removeItem('labdiag_logado');
-            window.location.reload();
         }
 
         function alternarAba(idAba) {
@@ -422,13 +512,14 @@
 
             const titulos = {
                 'aba-dashboard': ['Métricas Analíticas e Visão Geral', 'Indicadores avançados de desempenho de glosas e auditoria em tempo real'],
+                'aba-tarefas': ['Quadro de Tarefas Operacionais', 'Administração de demandas, produtividade e velocímetros das metas'],
                 'aba-contas': ['Lançar Faturas', 'Gerenciamento operacional e auditoria de lotes'],
                 'aba-extrato': ['Extrato de Auditoria', 'Gere relatórios profissionais consolidados e filtros avançados']
             };
             document.getElementById('titulo-pagina').innerText = titulos[idAba][0];
             document.getElementById('subtitulo-pagina').innerText = titulos[idAba][1];
 
-            ['btn-aba-dashboard', 'btn-aba-contas', 'btn-aba-extrato'].forEach(btn => {
+            ['btn-aba-dashboard', 'btn-aba-tarefas', 'btn-aba-contas', 'btn-aba-extrato'].forEach(btn => {
                 const el = document.getElementById(btn);
                 if(el) {
                     el.className = btn === `btn-${idAba}` 
@@ -563,6 +654,7 @@
 
         function renderizarTabelas(totFat, totAud, totRep) {
             const corpoDash = document.getElementById('dash-movimentacoes');
+            if(!corpoDash) return;
             const competentes2026 = todasContasLocais.filter(x => x.competencia.endsWith("2026"));
             
             corpoDash.innerHTML = competentes2026.map(c => {
@@ -587,6 +679,7 @@
             const comp = document.getElementById('filtro-comp').value;
             const status = document.getElementById('filtro-status').value;
             const corpoExtrato = document.getElementById('tabela-extrato');
+            if(!corpoExtrato) return;
             
             const filtradas = todasContasLocais.filter(c => {
                 return c.prestador.toLowerCase().includes(nome) && 
@@ -610,6 +703,201 @@
             }).join('');
         }
 
+        // --- SISTEMA INTERNO DO SCRIPT DO MONDAY (TAREFAS OPERACIONAIS) ---
+        function emitTaskLog(msg) {
+            const hora = new Date().toLocaleTimeString();
+            logsPainel.unshift(`[${hora}] ${msg}`);
+            if (logsPainel.length > 15) logsPainel.pop();
+            localStorage.setItem('monday_standalone_logs', JSON.stringify(logsPainel));
+            
+            const lEl = document.getElementById('log-task-auditoria');
+            if (lEl) lEl.innerHTML = logsPainel.map(l => `<div>${l}</div>`).join('');
+        }
+
+        function computeDateIndicator(deadlineStr) {
+            if(!deadlineStr) return { html: `<span class="text-slate-400">--</span>` };
+            
+            const targetDate = new Date(deadlineStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const diffTime = targetDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const parts = deadlineStr.split('-');
+            const formattedDate = `${parts[2]}/${parts[1]}`;
+
+            if (diffDays < 0) {
+                return {
+                    html: `<div class="text-center"><span class="text-red-500 font-bold block">${formattedDate}</span><span class="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.2 rounded font-black uppercase">Atrasado ${Math.abs(diffDays)}d</span></div>`
+                };
+            } else if (diffDays === 0) {
+                return {
+                    html: `<div class="text-center"><span class="text-amber-500 font-bold block">${formattedDate}</span><span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-black uppercase">Entrega Hoje</span></div>`
+                };
+            } else {
+                return {
+                    html: `<div class="text-center"><span class="text-slate-700 font-medium block">${formattedDate}</span><span class="text-[10px] text-slate-400 block">Faltam ${diffDays} dias</span></div>`
+                };
+            }
+        }
+
+        function renderPainelTarefas() {
+            const tbody = document.getElementById('container-tarefas');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            painelTarefas.forEach(t => {
+                const dateMeta = computeDateIndicator(t.data);
+                let instanceBadgeClass = "instance-1st";
+                if(t.instancia === "2a Instância") instanceBadgeClass = "instance-2nd";
+                if(t.instancia === "3a Instância") instanceBadgeClass = "instance-3rd";
+
+                tbody.innerHTML += `<tr class="hover:bg-slate-50/80 border-b border-slate-100">
+                    <td class="py-2.5 px-4"><span class="bg-slate-200 text-slate-700 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">${t.setor || 'Geral'}</span></td>
+                    <td class="py-2.5 px-4 font-bold text-slate-950">${t.nome}</td>
+                    <td class="py-2.5 px-4 font-semibold text-slate-600"><i class="fa-solid fa-circle-user text-slate-400 mr-1"></i>${t.responsavel}</td>
+                    <td class="py-2.5 px-4 text-center">
+                        <select class="monday-select px-2.5 py-1 rounded text-[10px] font-extrabold text-white tracking-wide w-44 ${instanceBadgeClass}" onchange="changeTaskInstance('${t.id}', this.value)">
+                            <option value="1a Instância" ${t.instancia === '1a Instância' ? 'selected' : ''}>1ª Inst. (Auditoria Interna)</option>
+                            <option value="2a Instância" ${t.instancia === '2a Instância' ? 'selected' : ''}>2ª Inst. (Coord. Faturamento)</option>
+                            <option value="3a Instância" ${t.instancia === '3a Instância' ? 'selected' : ''}>3ª Inst. (Robson Farias)</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-4">${dateMeta.html}</td>
+                    <td class="py-2.5 px-4 text-center">
+                        <select class="monday-select px-2 py-0.5 rounded text-[10px] uppercase w-20 priority-${t.prioridade === 'Alta' ? 'high' : (t.prioridade === 'Média' ? 'medium' : 'low')}" onchange="changeTaskPriority('${t.id}', this.value)">
+                            <option value="Alta" ${t.prioridade === 'Alta' ? 'selected' : ''}>Alta</option>
+                            <option value="Média" ${t.prioridade === 'Média' ? 'selected' : ''}>Média</option>
+                            <option value="Baixa" ${t.prioridade === 'Baixa' ? 'selected' : ''}>Baixa</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-4 text-center">
+                        <select class="monday-select px-2 py-0.5 rounded text-[10px] uppercase w-24 status-${t.status}" onchange="changeTaskStatus('${t.id}', this.value)">
+                            <option value="backlog" ${t.status === 'backlog' ? 'selected' : ''}>Backlog</option>
+                            <option value="working" ${t.status === 'working' ? 'selected' : ''}>Trabalhando</option>
+                            <option value="stuck" ${t.status === 'stuck' ? 'selected' : ''}>Travado</option>
+                            <option value="done" ${t.status === 'done' ? 'selected' : ''}>Concluído</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-4 text-center">
+                        <button onclick="deleteTaskDirect('${t.id}')" class="text-slate-400 hover:text-red-500 cursor-pointer text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>`;
+            });
+
+            calculateTaskMetrics();
+            updateTaskCharts();
+            localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
+        }
+
+        function calculateTaskMetrics() {
+            const tot = painelTarefas.length;
+            const stuck = painelTarefas.filter(t => t.status === 'stuck').length;
+            const done = painelTarefas.filter(t => t.status === 'done').length;
+            const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
+
+            document.getElementById('kpi-task-total').innerText = tot;
+            document.getElementById('kpi-task-stuck').innerText = stuck;
+            document.getElementById('kpi-task-progress').innerText = `${pct}%`;
+            document.getElementById('task-bar-fill').style.width = `${pct}%`;
+            
+            // Atualiza o texto do Velocímetro (Gauge)
+            const txtProgress = document.getElementById('txt-gauge-task-progress');
+            if (txtProgress) txtProgress.innerText = `${pct}%`;
+        }
+
+        window.changeTaskStatus = function(id, status) {
+            const t = painelTarefas.find(x => x.id === id);
+            if(t) {
+                const antigo = t.status;
+                t.status = status;
+                emitTaskLog(`Status de "${t.nome}" alterado de [${antigo}] para [${status}].`);
+                renderPainelTarefas();
+            }
+        };
+
+        window.changeTaskPriority = function(id, prio) {
+            const t = painelTarefas.find(x => x.id === id);
+            if(t) {
+                const antiga = t.prioridade;
+                t.prioridade = prio;
+                emitTaskLog(`Prioridade de "${t.nome}" mudou de [${antiga}] para [${prio}].`);
+                renderPainelTarefas();
+            }
+        };
+
+        window.changeTaskInstance = function(id, novaInstancia) {
+            const t = painelTarefas.find(x => x.id === id);
+            if(t) {
+                const antiga = t.instancia;
+                t.instancia = novaInstancia;
+                emitTaskLog(`Alça de Escalabilidade: Atividade "${t.nome}" transferida de [${antiga}] para [${novaInstancia}].`);
+                renderPainelTarefas();
+            }
+        };
+
+        window.deleteTaskDirect = function(id) {
+            const t = painelTarefas.find(x => x.id === id);
+            if(t && confirm(`Excluir a tarefa "${t.nome}" do fluxo permanente?`)) {
+                painelTarefas = painelTarefas.filter(x => x.id !== id);
+                emitTaskLog(`Tarefa "${t.nome}" removida pelo supervisor.`);
+                renderPainelTarefas();
+            }
+        };
+
+        // INICIALIZAÇÃO DOS GRAFICOS DE TAREFAS
+        function initTaskCharts() {
+            const ctxGauge = document.getElementById('gaugeTaskProgress');
+            if(!ctxGauge) return;
+            gaugeTaskProgress = new Chart(ctxGauge.getContext('2d'), {
+                type: 'doughnut',
+                data: { datasets: [{ data: [0, 100], backgroundColor: ['#00c875', '#e2e8f0'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, plugins: { legend: { display: false } }, cutout: '80%' }
+            });
+
+            const ctxProd = document.getElementById('chartTaskProdutividade').getContext('2d');
+            chartTaskProdutividade = new Chart(ctxProd, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: '#0284c7', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } }, plugins: { legend: { display: false } } }
+            });
+
+            const ctxInst = document.getElementById('chartTaskInstancia').getContext('2d');
+            chartTaskInstancia = new Chart(ctxInst, {
+                type: 'doughnut',
+                data: { labels: ['1ª Inst.', '2ª Inst.', '3ª Inst.'], datasets: [{ data: [0,0,0], backgroundColor: ['#0284c7', '#0f766e', '#1e1b4b'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } } }
+            });
+        }
+
+        function updateTaskCharts() {
+            if(!gaugeTaskProgress || !chartTaskProdutividade || !chartTaskInstancia) return;
+
+            const tot = painelTarefas.length;
+            const done = painelTarefas.filter(t => t.status === 'done').length;
+            const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
+
+            // Atualiza o Velocímetro de Tarefas
+            gaugeTaskProgress.data.datasets[0].data = [pct, Math.max(0, 100 - pct)];
+            gaugeTaskProgress.update();
+
+            // Atualiza Produtividade por Profissional (Barras)
+            const countExecutores = {};
+            painelTarefas.forEach(t => countExecutores[t.responsavel] = (countExecutores[t.responsavel] || 0) + 1);
+            chartTaskProdutividade.data.labels = Object.keys(countExecutores);
+            chartTaskProdutividade.data.datasets[0].data = Object.values(countExecutores);
+            chartTaskProdutividade.update();
+
+            // Atualiza Instâncias de Supervisão (Rosca)
+            const inst1 = painelTarefas.filter(t => t.instancia === '1a Instância').length;
+            const inst2 = painelTarefas.filter(t => t.instancia === '2a Instância').length;
+            const inst3 = painelTarefas.filter(t => t.instancia === '3a Instância').length;
+            chartTaskInstancia.data.datasets[0].data = [inst1, inst2, inst3];
+            chartTaskInstancia.update();
+        }
+
+        // --- ENGENHARIA DE EVENTOS DO CORE ---
         function mapearEventosInjetados() {
             document.getElementById('form-conciliacao').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -642,6 +930,38 @@
                 carregarDadosCompletos(); 
                 alternarAba('aba-dashboard');
             });
+
+            // Evento de Criação da Nova Demanda com Todos os Indicadores Ativados
+            document.getElementById('form-tarefa').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const nIn = document.getElementById('add-task-nome');
+                const rIn = document.getElementById('add-task-responsavel');
+                const sIn = document.getElementById('add-task-setor');
+                const iIn = document.getElementById('add-task-instancia');
+                const dIn = document.getElementById('add-task-data');
+                const pIn = document.getElementById('add-task-prio');
+
+                painelTarefas.push({ 
+                    id: 'tk_' + Date.now(), 
+                    nome: nIn.value, 
+                    responsavel: rIn.value, 
+                    instancia: iIn.value,
+                    setor: sIn.value,
+                    data: dIn.value,
+                    prioridade: pIn.value, 
+                    status: 'working' 
+                });
+                
+                emitTaskLog(`Nova demanda mapeada: "${nIn.value}" alocada em [${iIn.value}].`);
+                
+                // Resetando os inputs de texto e data
+                nIn.value = ''; 
+                rIn.value = '';
+                dIn.value = '';
+                
+                renderPainelTarefas();
+            });
+            emitTaskLog("Mapeamento de processos operacionais atualizado.");
         }
 
         function prepararEdicao(ts) {
@@ -684,7 +1004,6 @@
         function processarImportacaoJson(event) {
             const arquivo = event.target.files[0];
             if (!arquivo) return;
-
             const leitor = new FileReader();
             leitor.onload = function(e) {
                 try {
@@ -692,14 +1011,10 @@
                     if (conteudoJson && Array.isArray(conteudoJson.ultimas_contas)) {
                         localStorage.setItem('db.json', JSON.stringify(conteudoJson));
                         carregarDadosCompletos();
-                        alert('Base de dados atualizada e página renderizada com sucesso!');
+                        alert('Base de dados updated!');
                         event.target.value = '';
-                    } else {
-                        alert('Formato inválido! O arquivo precisa conter o objeto "ultimas_contas".');
-                    }
-                } catch (erro) {
-                    alert('Erro ao ler o arquivo JSON. Certifique-se de que ele está bem formatado.');
-                }
+                    } else { alert('Formato inválido!'); }
+                } catch (erro) { alert('Erro ao ler o arquivo JSON.'); }
             };
             leitor.readAsText(arquivo);
         }
