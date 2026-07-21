@@ -14,7 +14,7 @@
         .neon-text-green { text-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
         .neon-text-red { text-shadow: 0 0 6px rgba(248, 113, 113, 0.6); }
 
-        /* Classes do Painel de Tarefas */
+        /* Estilos do Quadro de Tarefas (Estilo Monday) */
         .monday-select { appearance: none; -webkit-appearance: none; text-align: center; font-weight: 800; color: white; cursor: pointer; transition: all 0.2s ease; border: none; }
         .status-working { background-color: #fdab3d; }
         .status-done { background-color: #00c875; }
@@ -25,37 +25,19 @@
         .priority-medium { background-color: #a25ddc; }
         .priority-low { background-color: #55596e; }
 
-        /* Cores de Instância */
-        .instance-1st { background-color: #0284c7; } /* Operacional */
-        .instance-2nd { background-color: #0f766e; } /* Tático */
-        .instance-3rd { background-color: #1e1b4b; } /* Estratégico - Robson Farias */
-
-        /* Estilos avançados para uma impressão limpa e com alto contraste */
         @media print {
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-scheme: light !important;
-            }
-            body { background: #ffffff !important; color: #000000 !important; }
-            .w-64, header, .bg-slate-50, .no-print, button, input, select, .ticker-container { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .w-64, header, .no-print, button, input, select { display: none !important; }
             .flex-1, #estrutura-sistema, #corpo-principal { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; height: auto !important;}
-            main { padding: 0 !important; max-width: 100% !important; }
-            .bg-white, .rounded-2xl, .border, .shadow-sm, .shadow-md { border: none !important; box-shadow: none !important; background: transparent !important; }
-            table { font-size: 11px !important; width: 100% !important; border-collapse: collapse !important; color: #000000 !important; }
-            th { background-color: #0f172a !important; color: #ffffff !important; padding: 8px !important; }
-            td { color: #000000 !important; padding: 6px !important; border-bottom: 1px solid #e2e8f0 !important; }
-            td span, td font, .font-mono, .text-slate-500, .text-slate-600, .text-slate-900 { color: #000000 !important; }
-            .text-red-500, .text-red-600 { color: #850000 !important; font-weight: bold !important; }
-            .text-blue-600, .text-blue-700 { color: #002d7a !important; font-weight: bold !important; }
-            tr { page-break-inside: avoid !important; }
         }
     </style>
 </head>
 <body class="bg-slate-900 font-sans text-slate-800 min-h-screen flex items-center justify-center m-0" id="corpo-principal">
 
-    <!-- Painel de Login de Segurança -->
-    <div id="bloco-autenticacao" class="w-full max-w-md mx-4 transition-all duration-300">
+    <!-- ========================================== -->
+    <!-- TELA DE LOGIN                              -->
+    <!-- ========================================== -->
+    <div id="bloco-autenticacao" class="w-full max-w-md mx-4 transition-all duration-300 block">
         <div class="bg-white p-8 rounded-2xl shadow-2xl border border-slate-800/10">
             <div class="text-center mb-8">
                 <div class="bg-blue-600 text-white font-bold text-2xl w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">LD</div>
@@ -67,14 +49,14 @@
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Utilizador</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                        <input type="text" id="login-user" required class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500 bg-slate-50">
+                        <input type="text" id="login-user" value="admin" required class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500 bg-slate-50">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Palavra-passe</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                        <input type="password" id="login-pass" required class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500 bg-slate-50">
+                        <input type="password" id="login-pass" value="1234" required class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500 bg-slate-50">
                     </div>
                 </div>
                 <div id="erro-autenticacao" class="text-red-500 text-xs font-bold hidden text-center bg-red-50 py-2 rounded-lg border border-red-100 animate-pulse">
@@ -87,11 +69,13 @@
         </div>
     </div>
 
-    <!-- Container do Sistema Protegido -->
+    <!-- CONTAINER PRINCIPAL DO SISTEMA -->
     <div id="estrutura-sistema" class="w-full h-screen flex overflow-hidden hidden bg-slate-50"></div>
 
     <template id="template-admin">
-        <!-- Sidebar Principal Estável -->
+        <!-- ========================================== -->
+        <!-- MENU LATERAL (NAVEGAÇÃO)                   -->
+        <!-- ========================================== -->
         <div class="w-64 bg-slate-900 text-white flex flex-col justify-between p-5 border-r border-slate-800 no-print shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-8">
@@ -113,11 +97,9 @@
                     </button>
                     
                     <input type="file" id="input-importar-json" accept=".json" onchange="processarImportacaoJson(event)" class="hidden">
-                    
                     <button onclick="document.getElementById('input-importar-json').click()" class="w-full flex items-center gap-3 text-blue-400 hover:bg-blue-950/40 hover:text-blue-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-4 border border-blue-800/40 bg-blue-950/10">
                         <i class="fa-solid fa-upload w-5"></i> Importar DB.json
                     </button>
-
                     <button onclick="exportarJson()" class="w-full flex items-center gap-3 text-emerald-400 hover:bg-emerald-950/40 hover:text-emerald-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-2 border border-emerald-800/40 bg-emerald-950/10">
                         <i class="fa-solid fa-download w-5"></i> Exportar DB.json
                     </button>
@@ -129,37 +111,42 @@
             <div class="text-sm text-slate-500">v6.3.0 • Real dataset</div>
         </div>
 
-        <!-- Área de Conteúdo Flexível -->
+        <!-- CORPO PRINCIPAL DE CONTEÚDO -->
         <div class="flex-1 flex flex-col overflow-y-auto">
             <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm sticky top-0 z-50 no-print shrink-0">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900" id="titulo-pagina">Métricas Analíticas e Visão Geral</h1>
-                    <p class="text-sm text-slate-500" id="subtitulo-pagina">Indicadores avançados de desempenho de glosas e auditoria em tempo real</p>
+                    <p class="text-sm text-slate-500" id="subtitulo-pagina">Painel integrado de gestão hospitalar - Labdiag</p>
                 </div>
-                <div class="w-10 h-10 bg-blue-100 text-blue-600 font-semibold rounded-full flex items-center justify-center border border-blue-200 shrink-0">RB</div>
+                <div class="w-10 h-10 bg-blue-100 text-blue-600 font-semibold rounded-full flex items-center justify-center border border-blue-200 shrink-0">RF</div>
             </header>
 
             <main class="p-8 space-y-6 max-w-7xl w-full mx-auto flex-1">
                 
-                <!-- SEÇÃO 1: DASHBOARD ANALÍTICO -->
-                <div id="aba-dashboard" class="space-y-6 secao-sistema">
-                    <!-- GRID DE KPIS CONGELADOS -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between shrink-0 overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">A Pagar Geral</p>
-                            <h3 class="text-xl font-bold text-slate-900 mt-1 truncate" id="dash-apagar">R$ 0,00</h3>
+                <!-- ========================================== -->
+                <!-- SEÇÃO 1: DASHBOARD CENTRAL                 -->
+                <!-- ========================================== -->
+                <div id="aba-dashboard" class="space-y-6 secao-sistema block">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 auto-rows-fr">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between">
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Total Acordado</p>
+                            <h3 class="text-lg font-bold text-slate-900 mt-1" id="dash-apagar">R$ 0,00</h3>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between shrink-0 overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Auditado Retido</p>
-                            <h3 class="text-xl font-bold text-slate-900 mt-1 truncate" id="dash-auditado">R$ 0,00</h3>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between">
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Total Glosado</p>
+                            <h3 class="text-lg font-bold text-slate-900 mt-1" id="dash-auditado">R$ 0,00</h3>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between shrink-0 overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Total Pago Liquido</p>
-                            <h3 class="text-xl font-bold text-slate-900 mt-1 truncate" id="dash-pago">R$ 0,00</h3>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between">
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Total Pago Líquido</p>
+                            <h3 class="text-lg font-bold text-slate-900 mt-1" id="dash-pago">R$ 0,00</h3>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-md bg-gradient-to-br from-emerald-50 to-white h-28 flex flex-col justify-between shrink-0 overflow-hidden">
-                            <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider truncate">Total Recuperado</p>
-                            <h3 class="text-xl font-bold text-emerald-600 mt-1 truncate" id="dash-recuperado">R$ 0,00</h3>
+                        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-md bg-gradient-to-br from-emerald-50 to-white h-28 flex flex-col justify-between">
+                            <p class="text-xs font-semibold text-emerald-700 uppercase">Total Recuperado</p>
+                            <h3 class="text-lg font-bold text-emerald-600 mt-1" id="dash-recuperado">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-red-200 shadow-md bg-gradient-to-br from-red-50 to-white h-28 flex flex-col justify-between">
+                            <p class="text-xs font-semibold text-red-700 uppercase">Perda MatMed Total</p>
+                            <h3 class="text-lg font-bold text-red-600 mt-1" id="dash-perda-matmed">R$ 0,00</h3>
                         </div>
                     </div>
 
@@ -170,76 +157,66 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="bg-blue-50 text-blue-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-percent text-lg"></i></div>
-                            <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Índice de Glosa</p><h4 class="text-base font-black text-slate-900" id="card-idx-glosa">0.0%</h4></div>
+                            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Índice de Glosa</p><h4 class="text-base font-black text-slate-900" id="card-idx-glosa">0.0%</h4></div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="bg-amber-50 text-amber-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-hourglass-half text-lg"></i></div>
-                            <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Atraso Médio</p><h4 class="text-base font-black text-slate-900" id="card-atraso">0 dias</h4></div>
+                            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Atraso Médio</p><h4 class="text-base font-black text-slate-900" id="card-atraso">0 dias</h4></div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="bg-purple-50 text-purple-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-receipt text-lg"></i></div>
-                            <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ticket Médio/Conta</p><h4 class="text-base font-black text-slate-900" id="card-ticket">R$ 0,00</h4></div>
+                            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Ticket Médio / Conta</p><h4 class="text-base font-black text-slate-900" id="card-ticket">R$ 0,00</h4></div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="bg-slate-50 text-slate-600 p-3 rounded-xl shrink-0"><i class="fa-solid fa-folder-open text-lg"></i></div>
-                            <div><p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Faturas em Aberto</p><h4 class="text-base font-black text-slate-900" id="card-abertas">0 faturas</h4></div>
+                            <div><p class="text-[11px] font-bold text-slate-400 uppercase">Faturas em Aberto</p><h4 class="text-base font-black text-slate-900" id="card-abertas">0 faturas</h4></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative min-h-[200px]">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative h-64">
                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Meta Operacional: Eficiência de Glosa</h3>
                             <div class="w-full max-w-[240px] h-32 relative"><canvas id="gaugeGlosa"></canvas><div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center"><span class="text-2xl font-black text-slate-900" id="txt-gauge-glosa">0.0%</span></div></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative min-h-[200px]">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center relative h-64">
                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Meta de Liquidação: Repasses Pagos</h3>
                             <div class="w-full max-w-[240px] h-32 relative"><canvas id="gaugePago"></canvas><div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center"><span class="text-2xl font-black text-slate-900" id="txt-gauge-pago">0.0%</span></div></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 min-h-[300px]">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 h-80">
                             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Evolução Mensal: Cobrado x Liberado</h3>
-                            <div class="h-64 relative"><canvas id="graficoEvolucao"></canvas></div>
+                            <div class="h-56 relative"><canvas id="graficoEvolucao"></canvas></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center min-h-[300px]">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center h-80">
                             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 w-full text-left">Representatividade por Status</h3>
-                            <div class="h-64 w-full relative"><canvas id="graficoDonutStatus"></canvas></div>
+                            <div class="h-56 w-full relative"><canvas id="graficoDonutStatusGeral"></canvas></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
-                            <div class="flex items-center gap-2 text-slate-900 font-bold text-sm uppercase tracking-tight border-b border-slate-100 pb-3 mb-4">
-                                <i class="fa-solid fa-ranking-star text-blue-600"></i> Foco de Glosas (Top Setores)
-                            </div>
-                            <div id="container-top-glosas" class="space-y-2"></div>
-                        </div>
-
-                        <div class="bg-white rounded-2xl border border-slate-200 shadow-md lg:col-span-2 overflow-hidden flex flex-col justify-between">
-                            <div class="p-6 pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Últimas Atividades Processadas (Competências Recentes)</h3>
-                                <button onclick="alternarAba('aba-extrato')" class="text-blue-600 text-xs font-bold hover:underline cursor-pointer">Ver Todos os Extratos</button>
-                            </div>
-                            <div class="overflow-x-auto w-full">
-                                <table class="w-full min-w-[600px] text-left border-collapse text-xs">
-                                    <thead>
-                                        <tr class="bg-slate-50 text-slate-400 uppercase text-[10px] font-bold tracking-wider border-b border-slate-100">
-                                            <th class="py-3 px-6">Prestador</th>
-                                            <th class="py-3 px-6 text-center">Competência</th>
-                                            <th class="py-3 px-6 text-right">Faturado</th>
-                                            <th class="py-3 px-6 text-right">Glosa (Auditado)</th>
-                                            <th class="py-3 px-6 text-center">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dash-movimentacoes" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
-                                </table>
-                            </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"><i class="fa-solid fa-list-check text-blue-600 mr-1"></i> Últimas Atividades Processadas</h3>
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+                                        <th class="py-2.5 px-4">Prestador</th>
+                                        <th class="py-2.5 px-4 text-center">Competência</th>
+                                        <th class="py-2.5 px-4 text-right">Faturado</th>
+                                        <th class="py-2.5 px-4 text-right">Glosa (Auditado)</th>
+                                        <th class="py-3 px-4 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-movimentacoes" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- SEÇÃO 2: QUADRO DE TAREFAS AVANÇADO (COM PRODUTIVIDADE, VELOCÍMETROS E INSTÂNCIAS) -->
+                <!-- ========================================== -->
+                <!-- SEÇÃO 2: QUADRO DE TAREFAS                 -->
+                <!-- ========================================== -->
                 <div id="aba-tarefas" class="space-y-6 secao-sistema hidden">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
@@ -256,10 +233,9 @@
                         </div>
                     </div>
 
-                    <!-- MÓDULO DE VELOCÍMETROS E PRODUTIVIDADE DE TAREFAS -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center relative min-h-[180px]">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center w-full">Velocímetro de Eficiência de Entrega</h4>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center w-full">Velocímetro de Eficiência</h4>
                             <div class="w-full max-w-[200px] h-28 relative">
                                 <canvas id="gaugeTaskProgress"></canvas>
                                 <div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center">
@@ -268,24 +244,16 @@
                             </div>
                         </div>
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm min-h-[180px] flex flex-col justify-between">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 w-full">Produtividade / Carga de Trabalho por Profissional</h4>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 w-full">Produtividade por Profissional</h4>
                             <div class="h-32 w-full relative"><canvas id="chartTaskProdutividade"></canvas></div>
                         </div>
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm min-h-[180px] flex flex-col justify-between">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 w-full">Demandas Distribuidoras por Instância</h4>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 w-full">Demandas por Instância</h4>
                             <div class="h-32 w-full relative"><canvas id="chartTaskInstancia"></canvas></div>
                         </div>
                     </div>
 
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-md space-y-5">
-                        <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-3 gap-2">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500"><i class="fa-solid fa-arrow-down-short-wide text-blue-500 mr-1"></i> Fluxo de Processos & Escalabilidade de Instâncias</h3>
-                            <div class="w-44 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
-                                <div id="task-bar-fill" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
-                            </div>
-                        </div>
-
-                        <!-- Formulário Customizado Avançado -->
                         <form id="form-tarefa" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                             <div class="lg:col-span-2">
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Descrição da Atividade</label>
@@ -302,7 +270,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Executor</label>
-                                <input type="text" id="add-task-responsavel" required placeholder="Nome do encarregado..." class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                                <input type="text" id="add-task-responsavel" required placeholder="Nome..." class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Supervisão / Instância</label>
@@ -325,123 +293,189 @@
                                 </select>
                             </div>
                             <div class="lg:col-span-2 flex items-end">
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition-all cursor-pointer shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Registrar e Encaminhar</button>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg shadow-sm cursor-pointer"><i class="fa-solid fa-plus mr-1"></i> Registrar</button>
                             </div>
                         </form>
 
-                        <!-- Tabela Principal Monday Corporativo -->
                         <div class="overflow-x-auto w-full">
                             <table class="w-full min-w-[1000px] text-left border-collapse text-xs">
                                 <thead>
                                     <tr class="bg-slate-100 text-slate-400 uppercase text-[9px] font-bold tracking-wider border-b border-slate-200">
-                                        <th class="py-3 px-4">Setor / Linha</th>
+                                        <th class="py-3 px-4">Setor</th>
                                         <th class="py-3 px-4">Item Operacional</th>
                                         <th class="py-3 px-4">Executor</th>
-                                        <th class="py-3 px-4 text-center" style="width: 170px;">Instância de Supervisão</th>
-                                        <th class="py-3 px-4 text-center" style="width: 120px;">Prazo / Dia</th>
+                                        <th class="py-3 px-4 text-center" style="width: 170px;">Instância</th>
+                                        <th class="py-3 px-4 text-center" style="width: 120px;">Prazo</th>
                                         <th class="py-3 px-4 text-center" style="width: 110px;">Prioridade</th>
                                         <th class="py-3 px-4 text-center" style="width: 120px;">Status</th>
-                                        <th class="py-3 px-4 text-center" style="width: 50px;"></th>
+                                        <th class="py-3 px-4 text-center" style="width: 50px;">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="container-tarefas" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
                             </table>
                         </div>
                     </div>
-
-                    <!-- Log de Auditoria Exclusivo do Painel de Tarefas -->
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs font-mono text-[10px] text-slate-500">
-                        <div class="font-bold text-slate-700 mb-1 uppercase text-[11px]">Histórico de Alterações do Quadro</div>
-                        <div class="max-h-24 overflow-y-auto space-y-1" id="log-task-auditoria"></div>
-                    </div>
                 </div>
 
-                <!-- SEÇÃO 3: FORMULÁRIO OPERACIONAL ANTIGO -->
+                <!-- ========================================== -->
+                <!-- SEÇÃO 3: LANÇAR FATURAS                    -->
+                <!-- ========================================== -->
                 <div id="aba-contas" class="space-y-6 secao-sistema hidden">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
-                        <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
-                            <div>
-                                <h3 class="text-base font-black text-slate-900 uppercase tracking-tight" id="form-titulo"><i class="fa-solid fa-file-circle-plus text-blue-600 mr-1"></i> Gestão e Lançamento de Faturas</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Insira os dados analíticos para auditoria e rateio de despesas</p>
-                            </div>
-                            <span id="indicador-modo" class="hidden text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 animate-pulse">Modo Edição</span>
+                    
+                    <!-- KPI TOP -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between h-20">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">A Pagar Geral</p>
+                            <h3 class="text-base font-black text-slate-900" id="anexo-apagar">R$ 0,00</h3>
                         </div>
-                        <form id="form-conciliacao" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                            <input type="hidden" id="conta-timestamp">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Prestador Hospitalar</label>
-                                <div class="relative"><i class="fa-solid fa-hospital absolute left-3 top-3 text-slate-400 text-sm"></i><input type="text" id="form-prestador" required placeholder="Ex: HOSPITAL FELICIO ROCHO" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50/50"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Setor / Centro de Custo</label>
-                                <div class="relative"><i class="fa-solid fa-chart-pie absolute left-3 top-3 text-slate-400 text-sm"></i><input type="text" id="form-setor" placeholder="Ex: IMAGEM ou LABORATÓRIO" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50/50"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Dias em Atraso</label>
-                                <div class="relative"><i class="fa-solid fa-hourglass-half absolute left-3 top-3 text-slate-400 text-sm"></i><input type="number" id="form-atraso" placeholder="Ex: 80" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50/50"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Competência do Lote</label>
-                                <div class="relative"><i class="fa-solid fa-calendar-days absolute left-3 top-3 text-slate-400 text-sm"></i><input type="text" id="form-competencia" placeholder="MM/AAAA" required maxlength="7" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50/50"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Faturado (R$)</label>
-                                <div class="relative"><i class="fa-solid fa-dollar-sign absolute left-3.5 top-3 text-slate-400 text-sm"></i><input type="number" step="0.01" id="form-faturado" required placeholder="0,00" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-900 bg-slate-50/50"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Glosa (R$)</label>
-                                <div class="relative"><i class="fa-solid fa-gavel absolute left-3.5 top-3 text-slate-400 text-sm"></i><input type="number" step="0.01" id="form-auditado" required placeholder="0,00" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-red-500 bg-slate-50/50"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Status Operacional</label>
-                                <div class="relative"><i class="fa-solid fa-toggle-on absolute left-3 top-3 text-slate-400 text-sm"></i><select id="form-status" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 bg-slate-50/50 appearance-none"><option value="A Pagar">A Pagar</option><option value="Auditada">Auditada</option><option value="Paga">Paga</option></select></div>
-                            </div>
-                            <div class="lg:col-span-2 flex items-end justify-end space-x-3 mt-2">
-                                <button type="button" onclick="limparFormulario()" class="bg-slate-100 text-slate-600 font-bold py-2 px-5 rounded-xl text-sm hover:bg-slate-200 border border-slate-200/40 cursor-pointer"><i class="fa-solid fa-xmark mr-1"></i> Cancelar</button>
-                                <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-xl text-sm hover:bg-blue-700 shadow-md cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar Registro</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO 4: EXTRATO CONSOLIDADO ANTIGO -->
-                <div id="aba-extrato" class="space-y-6 secao-sistema hidden">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-end gap-4 no-print">
-                        <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Prestador</label><input type="text" id="filtro-nome" oninput="filtrarExtrato()" placeholder="Buscar..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
-                        <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Competência</label><select id="filtro-comp" onchange="filtrarExtrato()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"><option value="Todas">Todas</option><option value="03/2026">03/2026</option><option value="02/2026">02/2026</option><option value="01/2026">01/2026</option><option value="12/2025">12/2025</option><option value="12/2024">12/2024</option></select></div>
-                        <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Status</label><select id="filtro-status" onchange="filtrarExtrato()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"><option value="Todos">Todos</option><option value="A Pagar">A Pagar</option><option value="Auditada">Auditada</option><option value="Paga">Paga</option></select></div>
-                        <button onclick="window.print()" class="bg-slate-900 text-white font-bold py-2 px-5 rounded-xl text-sm hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-2 h-[38px] shadow-xs w-full md:w-auto justify-center">
-                            <i class="fa-solid fa-print"></i> Imprimir Extrato
-                        </button>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between h-20">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Auditado Retido</p>
+                            <h3 class="text-base font-black text-slate-900" id="anexo-auditado">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between h-20">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Pago Líquido</p>
+                            <h3 class="text-base font-black text-slate-900" id="anexo-pago">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between h-20">
+                            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Total Recuperado</p>
+                            <h3 class="text-base font-black text-emerald-600" id="anexo-recuperado">R$ 0,00</h3>
+                        </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <!-- CENTRAL: FORMULÁRIO + DONUT LADO A LADO -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        
+                        <!-- FORM COMPACTO -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs lg:col-span-5">
+                            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                                <i class="fa-solid fa-file-invoice-dollar text-blue-600 text-base"></i>
+                                <h3 class="text-sm font-black text-slate-800" id="form-titulo">Lançamento e Conciliação</h3>
+                            </div>
+                            
+                            <form id="form-conciliacao" class="space-y-3 text-[11px]">
+                                <input type="hidden" id="conta-timestamp">
+                                
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Data Competência</label>
+                                        <input type="text" id="form-competencia" placeholder="Ex: 10/2025" required maxlength="7" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Dias em Atraso</label>
+                                        <input type="number" id="form-atraso" value="0" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-500 uppercase mb-0.5">Prestador</label>
+                                    <input type="text" id="form-prestador" placeholder="Nome do prestador" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Setor</label>
+                                        <input type="text" id="form-setor" placeholder="Ex: Radiologia" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Grupo</label>
+                                        <input type="text" id="form-grupo" placeholder="Ex: Médicos" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Faturado (R$)</label>
+                                        <input type="number" step="0.01" id="form-faturado" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold">
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Auditado (R$)</label>
+                                        <input type="number" step="0.01" id="form-auditado" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold text-blue-600">
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold text-slate-500 uppercase mb-0.5">Repasse (R$)</label>
+                                        <input type="number" step="0.01" id="form-acordo" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-200 text-slate-700 font-semibold" readonly>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-500 uppercase mb-0.5">Vlr Total MatMed (R$)</label>
+                                    <input type="number" step="0.01" id="form-matmed-total" placeholder="0.00" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold text-purple-600">
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-500 uppercase mb-0.5">Status Para Pagamento</label>
+                                    <select id="form-status" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white font-semibold text-slate-700">
+                                        <option value="A Pagar">A Pagar</option>
+                                        <option value="Auditada">Auditada</option>
+                                        <option value="Paga">Paga</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow-md cursor-pointer transition-all mt-2">
+                                    <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar Registro
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- GRÁFICO DONUT -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs lg:col-span-7 h-[410px] flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800">Distribuição Financeira</h3>
+                                <p class="text-[10px] text-slate-400 mt-0.5">Proporção por estado de liquidação das contas (Repasse)</p>
+                            </div>
+                            <div class="h-64 w-full relative flex items-center justify-center">
+                                <canvas id="graficoDonutStatus"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HISTÓRICO DE LANÇAMENTOS -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-6">
+                        <div class="p-4 border-b border-slate-100"><h3 class="text-sm font-black text-slate-800">Histórico de Lançamentos</h3></div>
                         <div class="overflow-x-auto w-full">
-                            <table class="w-full min-w-[850px] text-left border-collapse">
+                            <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-900 text-slate-300 uppercase text-[10px] font-bold border-b border-slate-800">
-                                        <th class="py-3 px-5 text-center">Competência</th>
-                                        <th class="py-3 px-5">Prestador</th>
-                                        <th class="py-3 px-5">Setor</th>
-                                        <th class="py-3 px-5 text-right">Faturado</th>
-                                        <th class="py-3 px-5 text-right">Auditado</th>
-                                        <th class="py-3 px-5 text-right">Repasse</th>
-                                        <th class="py-3 px-5 text-center">Atraso</th>
-                                        <th class="py-3 px-5 text-center">Status</th>
-                                        <th class="py-3 px-5 text-center no-print">Ações</th>
+                                    <tr class="bg-slate-50 text-slate-400 uppercase text-[9px] font-bold border-b border-slate-200">
+                                        <th class="py-3 px-4 text-center">Competência</th>
+                                        <th class="py-3 px-4">Prestador</th>
+                                        <th class="py-3 px-4">Setor / Grupo</th>
+                                        <th class="py-3 px-4 text-right">Vl. Faturado</th>
+                                        <th class="py-3 px-4 text-right">Vl. Auditado</th>
+                                        <th class="py-3 px-4 text-right">Vl. Repasse</th>
+                                        <th class="py-3 px-4 text-right">Vl. MatMed</th>
+                                        <th class="py-3 px-4 text-center">Atraso</th>
+                                        <th class="py-3 px-4 text-center">Status Pagamento</th>
+                                        <th class="py-3 px-4 text-center no-print">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabela-extrato" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
-                                <tfoot>
-                                    <tr class="bg-blue-50/70 font-black text-slate-900 text-xs border-t-2 border-slate-200">
-                                        <td colspan="3" class="py-4 px-5 uppercase">Total Consolidado do Extrato</td>
-                                        <td class="py-4 px-5 text-right text-slate-900" id="tot-foot-faturado">R$ 0,00</td>
-                                        <td class="py-4 px-5 text-right text-red-600" id="tot-foot-auditado">R$ 0,00</td>
-                                        <td class="py-4 px-5 text-right text-blue-700" id="tot-foot-repasse">R$ 0,00</td>
-                                        <td colspan="2" class="no-print"></td>
-                                        <td class="hidden print:table-cell"></td>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SEÇÃO 4: EXTRATO COMPLETO DE AUDITORIA     -->
+                <!-- ========================================== -->
+                <div id="aba-extrato" class="space-y-6 secao-sistema hidden">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-end gap-4 no-print">
+                        <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Buscar Prestador</label><input type="text" id="filtro-nome" oninput="filtrarExtratoExclusivo()" placeholder="Buscar..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
+                        <button onclick="window.print()" class="bg-slate-900 text-white font-bold py-2 px-5 rounded-xl text-sm hover:bg-slate-800 h-[38px] shadow-xs cursor-pointer"><i class="fa-solid fa-print"></i> Imprimir Relatório</button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-900 text-slate-300 font-bold uppercase text-[10px] border-b border-slate-800">
+                                        <th class="py-3 px-4 text-center">Competência</th>
+                                        <th class="py-3 px-4">Prestador</th>
+                                        <th class="py-3 px-4 text-right">Vl. Cobrado</th>
+                                        <th class="py-3 px-4 text-right">Vl. Glosa (Auditado)</th>
+                                        <th class="py-3 px-4 text-right">Vl. Repasse</th>
+                                        <th class="py-3 px-4 text-center">Status</th>
                                     </tr>
-                                </tfoot>
+                                </thead>
+                                <tbody id="tabela-extrato-geral" class="divide-y divide-slate-100 font-medium"></tbody>
                             </table>
                         </div>
                     </div>
@@ -450,58 +484,51 @@
         </div>
     </template>
 
+    <!-- ========================================== -->
+    <!-- SCRIPTS E INTELIGÊNCIA LOGICIAL DE FLUXOS  -->
+    <!-- ========================================== -->
     <script>
         let gaugeChartGlosa = null, gaugeChartPago = null;
-        let chartEvolucao = null, chartDonutStatus = null;
+        let chartEvolucao = null, chartDonutStatusGeral = null, chartDonutStatus = null;
         let gaugeTaskProgress = null, chartTaskProdutividade = null, chartTaskInstancia = null;
         let todasContasLocais = [];
 
+        // Inicialização de cache local do motor Monday de tarefas
         let painelTarefas = JSON.parse(localStorage.getItem('monday_standalone_tasks')) || [
             { id: "tk_1", nome: "Auditoria Confirmação de Diárias", responsavel: "Ana Silva", instancia: "1a Instância", setor: "Auditoria", data: "2026-07-15", prioridade: "Alta", status: "working" },
             { id: "tk_2", nome: "Ajuste Cadastral de Tabelas TUSS", responsavel: "Carlos Lima", instancia: "2a Instância", setor: "Faturamento", data: "2026-07-20", prioridade: "Média", status: "stuck" },
             { id: "tk_3", nome: "Revisão Executiva de Glosas Críticas", responsavel: "Robson Farias", instancia: "3a Instância", setor: "Administração", data: "2026-07-05", prioridade: "Alta", status: "working" }
         ];
-        let logsPainel = JSON.parse(localStorage.getItem('monday_standalone_logs')) || ["Ambiente analítico com velocímetros de tarefas ativado."];
 
-        if (!localStorage.getItem('db.json') || JSON.parse(localStorage.getItem('db.json')).ultimas_contas.length === 0) {
-            const estruturaInicial = {
-                ultimas_contas: [
-                    { timestamp: "ts_1", competencia: "03/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "LABORATÓRIO", valor_faturado: 21426.69, valor_auditado: 8757.54, atraso: 80, status: "A Pagar" },
-                    { timestamp: "ts_2", competencia: "03/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      valor_faturado: 35448.92, valor_auditado: 5916.52, atraso: 80, status: "A Pagar" },
-                    { timestamp: "ts_3", competencia: "02/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "LABORATÓRIO", valor_faturado: 10647.05, valor_auditado: 1171.23, atraso: 111, status: "A Pagar" },
-                    { timestamp: "ts_4", competencia: "01/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      valor_faturado: 17629.80, valor_auditado: 1333.00, atraso: 139, status: "A Pagar" },
-                    { timestamp: "ts_5", competencia: "01/2026", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      valor_faturado: 4786.49,  valor_auditado: 3.42,    atraso: 139, status: "A Pagar" },
-                    { timestamp: "ts_6", competencia: "12/2024", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      valor_faturado: 124003.71, valor_auditado: 11160.82, atraso: 542, status: "A Pagar" },
-                    { timestamp: "ts_7", competencia: "12/2024", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMA",         valor_faturado: 63007.23,  valor_auditado: 4325.49,  atraso: 544, status: "A Pagar" },
-                    { timestamp: "ts_8", competencia: "12/2025", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      valor_faturado: 26888.07,  valor_auditado: 0.00,     atraso: 170, status: "A Pagar" },
-                    { timestamp: "ts_9", competencia: "12/2025", prestador: "HOSPITAL FELICIO ROCHO", setor: "IMAGEM",      valor_faturado: 8722.34,   valor_auditado: 0.00,     atraso: 170, status: "A Pagar" }
-                ]
-            };
-            localStorage.setItem('db.json', JSON.stringify(estruturaInicial));
+        if (!localStorage.getItem('db.json')) {
+            localStorage.setItem('db.json', JSON.stringify({ ultimas_contas: [] }));
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('labdiag_logado') === 'true') {
-                inicializarEcossistemaProtegido();
-            }
-        });
-
-        document.getElementById('form-login').addEventListener('submit', (e) => {
+        // ==========================================
+        // MOTOR DE AUTENTICAÇÃO (SISTEMA DE LOGIN)
+        // ==========================================
+        document.getElementById('form-login').addEventListener('submit', function(e) {
             e.preventDefault();
-            if (document.getElementById('login-user').value === 'admin' && document.getElementById('login-pass').value === '1234') {
-                localStorage.setItem('labdiag_logado', 'true');
+            const usuario = document.getElementById('login-user').value;
+            const passe = document.getElementById('login-pass').value;
+            const erroMsg = document.getElementById('erro-autenticacao');
+
+            if (usuario === 'admin' && passe === '1234') {
+                if (erroMsg) erroMsg.classList.add('hidden');
                 inicializarEcossistemaProtegido();
             } else {
-                document.getElementById('erro-autenticacao').classList.remove('hidden');
+                if (erroMsg) erroMsg.classList.remove('hidden');
             }
         });
 
         function inicializarEcossistemaProtegido() {
-            document.getElementById('bloco-autenticacao').remove();
-            document.getElementById('corpo-principal').className = "bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden m-0";
+            const blocoAuth = document.getElementById('bloco-autenticacao');
+            if(blocoAuth) blocoAuth.remove();
+            document.getElementById('corpo-principal').className = "bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden m-0 block";
 
             const template = document.getElementById('template-admin').content.cloneNode(true);
             const containerSist = document.getElementById('estrutura-sistema');
+            containerSist.innerHTML = '';
             containerSist.appendChild(template);
             containerSist.classList.remove('hidden');
 
@@ -509,31 +536,29 @@
             scriptChart.src = "https://cdn.jsdelivr.net/npm/chart.js";
             scriptChart.onload = () => { 
                 initTaskCharts();
-                carregarDadosCompletos(); 
-                renderPainelTarefas();
+                setTimeout(() => {
+                    carregarDadosCompletos(); 
+                    renderPainelTarefas();
+                    mapearEventosTarefas();
+                    vincularCalculoAutomatico();
+                }, 100);
             };
             document.head.appendChild(scriptChart);
             mapearEventosInjetados();
         }
 
         window.logout = function() {
-            localStorage.removeItem('labdiag_logado');
-            window.location.reload();
-        };
+            if(confirm("Deseja encerrar sua sessão atual de forma segura?")) {
+                location.reload();
+            }
+        }
 
         window.alternarAba = function(idAba) {
             document.querySelectorAll('.secao-sistema').forEach(s => s.classList.add('hidden'));
-            document.getElementById(idAba).classList.remove('hidden');
-
-            const titulos = {
-                'aba-dashboard': ['Métricas Analíticas e Visão Geral', 'Indicadores avançados de desempenho de glosas e auditoria em tempo real'],
-                'aba-tarefas': ['Quadro de Tarefas Operacionais', 'Administração de demandas, produtividade e velocímetros das metas'],
-                'aba-contas': ['Lançar Faturas', 'Gerenciamento operacional e auditoria de lotes'],
-                'aba-extrato': ['Extrato de Auditoria', 'Gere relatórios profissionais consolidados e filtros avançados']
-            };
-            document.getElementById('titulo-pagina').innerText = titulos[idAba][0];
-            document.getElementById('subtitulo-pagina').innerText = titulos[idAba][1];
-
+            const elAba = document.getElementById(idAba);
+            if(elAba) elAba.classList.remove('hidden');
+            
+            // Gerenciamento visual dos botões do menu lateral
             ['btn-aba-dashboard', 'btn-aba-tarefas', 'btn-aba-contas', 'btn-aba-extrato'].forEach(btn => {
                 const el = document.getElementById(btn);
                 if(el) {
@@ -542,96 +567,106 @@
                         : "w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer";
                 }
             });
+            carregarDadosCompletos();
         };
 
+        // ==========================================
+        // MOTOR 1: ENGENHARIA E CONCILIAÇÃO DE DADOS 
+        // ==========================================
         function carregarDadosCompletos() {
             const db = JSON.parse(localStorage.getItem('db.json'));
             todasContasLocais = db.ultimas_contas || [];
             
             let totalFaturado = 0;   
-            let totalAuditadoGlosa = 0;  
-            let totalRepasseLiquido = 0;        
+            let totalGlosaRetido = 0;  
+            let totalAcordadoPagar = 0;        
             let totalAtraso = 0;
             let qtdComAtraso = 0;
-            let totalValorPago = 0;
+            let totalValorPagoLiquido = 0;
+            let totalRecuperadoAuditoria = 0;
+            let totalPerdaMatMed = 0; 
             
             let contagemStatus = { "A Pagar": 0, "Auditada": 0, "Paga": 0 };
-            let mapaGlosasPorSetor = {};
 
             todasContasLocais.forEach(c => {
                 const fat = parseFloat(c.valor_faturado) || 0;
-                const glosa = parseFloat(c.valor_auditado) || 0;
-                const setorNome = (c.setor || 'GERAL').toUpperCase().trim();
+                let aud = parseFloat(c.valor_auditado) || 0;
+                
+                // Normalização estrutural retrocompatível
+                let acordo = fat - aud;
+                if (c.valor_acordo !== undefined) acordo = parseFloat(c.valor_acordo);
+                else if (c.valor_repasse !== undefined) acordo = parseFloat(c.valor_repasse);
+
+                const CCusto = (c.setor || c.grupo || 'GERAL').toUpperCase().trim();
+                const matmedTotal = parseFloat(c.valor_matmed_total) || 0;
                 
                 totalFaturado += fat;
-                totalAuditadoGlosa += glosa;
-                totalRepasseLiquido += (fat - glosa);
+                totalAcordadoPagar += acordo;
+                totalGlosaRetido += aud; 
+                
+                // NOVO CÁLCULO: VALOR COBRADO (FATURADO) - VALOR ACORDO (REPASSE)
+                totalRecuperadoAuditoria += (fat - acordo);
+                totalPerdaMatMed += matmedTotal;
 
-                if (c.status === "Paga") {
-                    totalValorPago += (fat - glosa);
+                if (c.status === "Paga" || c.status === "Pago") {
+                    totalValorPagoLiquido += acordo;
                 }
-
                 if(c.atraso) {
                     totalAtraso += parseInt(c.atraso);
                     qtdComAtraso++;
                 }
-
-                if(contagemStatus[c.status] !== undefined) {
-                    contagemStatus[c.status]++;
-                }
-
-                if(!mapaGlosasPorSetor[setorNome]) mapaGlosasPorSetor[setorNome] = 0;
-                mapaGlosasPorSetor[setorNome] += glosa;
+                if(contagemStatus[c.status] !== undefined) contagemStatus[c.status]++;
             });
 
-            const idxGlosaGeral = totalFaturado > 0 ? ((totalAuditadoGlosa / totalFaturado) * 100) : 0;
+            const idxGlosaGeral = totalFaturado > 0 ? ((totalGlosaRetido / totalFaturado) * 100) : 0;
             const mediaAtraso = qtdComAtraso > 0 ? Math.round(totalAtraso / qtdComAtraso) : 0;
             const ticketMedio = todasContasLocais.length > 0 ? (totalFaturado / todasContasLocais.length) : 0;
-            const percentualPago = totalRepasseLiquido > 0 ? ((totalValorPago / totalRepasseLiquido) * 100) : 0;
+            const percentualPago = totalAcordadoPagar > 0 ? ((totalValorPagoLiquido / totalAcordadoPagar) * 100) : 0;
 
-            document.getElementById('dash-apagar').innerText = 'R$ ' + totalRepasseLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('dash-auditado').innerText = 'R$ ' + totalAuditadoGlosa.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('dash-pago').innerText = 'R$ ' + totalValorPago.toLocaleString('pt-BR', {minimumFractionDigits: 2}); 
-            document.getElementById('dash-recuperado').innerText = 'R$ ' + totalAuditadoGlosa.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            // Injeta dados nas duas estruturas de KPIs de forma segura
+            const mapeamentoValores = {
+                'dash-apagar': totalAcordadoPagar, 'anexo-apagar': totalAcordadoPagar,
+                'dash-auditado': totalGlosaRetido, 'anexo-auditado': totalGlosaRetido,
+                'dash-pago': totalValorPagoLiquido, 'anexo-pago': totalValorPagoLiquido,
+                'dash-recuperado': totalRecuperadoAuditoria, 'anexo-recuperado': totalRecuperadoAuditoria,
+                'dash-perda-matmed': totalPerdaMatMed
+            };
 
-            document.getElementById('card-idx-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
-            document.getElementById('card-atraso').innerText = mediaAtraso + ' dias';
-            document.getElementById('card-ticket').innerText = 'R$ ' + ticketMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('card-abertas').innerText = contagemStatus['A Pagar'] + ' faturas';
-
-            let stringTicker = "";
-            todasContasLocais.forEach(c => {
-                stringTicker += `<span class="inline-flex items-center space-x-2 text-[16px]"><span class="text-slate-300 font-bold uppercase">${c.prestador} (${c.competencia}):</span><span class="text-emerald-400 font-medium neon-text-green">▲ FAT R$ ${c.valor_faturado.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span><span class="text-red-400 font-medium neon-text-red">▼ GLO R$ ${c.valor_auditado.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></span> &nbsp;&nbsp;&nbsp;&nbsp;`;
-            });
-            document.getElementById('letreiro-bolsa').innerHTML = stringTicker ? stringTicker + stringTicker : "<span>Painel operacional sincronizado.</span>";
-
-            const rankingOrdenado = Object.keys(mapaGlosasPorSetor)
-                .map(s => ({ nome: s, totalGlosa: mapaGlosasPorSetor[s] }))
-                .sort((a, b) => b.totalGlosa - a.totalGlosa);
-
-            const containerTopGlosas = document.getElementById('container-top-glosas');
-            if(containerTopGlosas) {
-                containerTopGlosas.innerHTML = rankingOrdenado.map((s, index) => {
-                    return `<div class="flex items-center justify-between bg-slate-50 border border-slate-100 p-3 rounded-xl shadow-xs">
-                                <div class="flex items-center gap-2 truncate">
-                                    <span class="bg-blue-100 text-blue-700 font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shrink-0">${index + 1}º</span>
-                                    <span class="text-xs font-bold text-slate-700 tracking-tight truncate max-w-[150px]">${s.nome}</span>
-                                </div>
-                                <span class="text-xs font-black text-red-600 shrink-0">R$ ${s.totalGlosa.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
-                            </div>`;
-                }).join('');
+            for(let [id, val] of Object.entries(mapeamentoValores)){
+                let el = document.getElementById(id);
+                if(el) el.innerText = 'R$ ' + val.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             }
 
-            document.getElementById('txt-gauge-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
-            document.getElementById('txt-gauge-pago').innerText = percentualPago.toFixed(1) + '%';
+            if(document.getElementById('card-idx-glosa')) document.getElementById('card-idx-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
+            if(document.getElementById('card-atraso')) document.getElementById('card-atraso').innerText = mediaAtraso + ' dias';
+            if(document.getElementById('card-ticket')) document.getElementById('card-ticket').innerText = 'R$ ' + ticketMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            if(document.getElementById('card-abertas')) document.getElementById('card-abertas').innerText = contagemStatus['A Pagar'] + ' faturas';
+
+            // Ticker Letreiro Digital
+            let stringTicker = "";
+            todasContasLocais.slice(0, 5).forEach(c => {
+                stringTicker += `<span class="inline-flex items-center space-x-2"><span class="text-slate-300 font-bold uppercase">${c.prestador}:</span><span class="text-emerald-400 font-medium neon-text-green">▲ COBRADO R$ ${c.valor_faturado.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></span> &nbsp;&nbsp;&nbsp;&nbsp;`;
+            });
+            if(document.getElementById('letreiro-bolsa')) document.getElementById('letreiro-bolsa').innerHTML = stringTicker || "<span>Painel sincronizado.</span>";
 
             renderizarGauges(idxGlosaGeral, percentualPago);
-            renderizarGraficosAvancados(contagemStatus);
-            renderizarTabelas(totalFaturado, totalAuditadoGlosa, totalRepasseLiquido);
+            renderizarGraficosCompletos(contagemStatus, totalAcordadoPagar, totalGlosaRetido, totalValorPagoLiquido);
+            renderizarTabelaHistorial();
+            filtrarExtratoExclusivo();
+        }
+
+        function vincularCalculoAutomatico() {
+            const faturado = document.getElementById('form-faturado');
+            const auditado = document.getElementById('form-auditado');
+            const acordo = document.getElementById('form-acordo');
+            if(!faturado || !auditado) return;
+            const calc = () => { acordo.value = (Math.max(0, (parseFloat(faturado.value) || 0) - (parseFloat(auditado.value) || 0))).toFixed(2); };
+            faturado.addEventListener('input', calc);
+            auditado.addEventListener('input', calc);
         }
 
         function renderizarGauges(glosa, pago) {
-            if(!window.Chart) return;
+            if(!window.Chart || !document.getElementById('gaugeGlosa')) return;
             const opt = { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, plugins: { legend: { display: false } }, cutout: '80%' };
             if (gaugeChartGlosa) gaugeChartGlosa.destroy();
             gaugeChartGlosa = new Chart(document.getElementById('gaugeGlosa').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [glosa, Math.max(0, 100 - glosa)], backgroundColor: ['#3b82f6', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
@@ -639,428 +674,236 @@
             gaugeChartPago = new Chart(document.getElementById('gaugePago').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [pago, Math.max(0, 100 - pago)], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
         }
 
-        function renderizarGraficosAvancados(statusData) {
+        function renderizarGraficosCompletos(stData, apagar, auditado, pago) {
             if(!window.Chart) return;
-
-            if (chartEvolucao) chartEvolucao.destroy();
-            chartEvolucao = new Chart(document.getElementById('graficoEvolucao').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['12/2024', '12/2025', '01/2026', '02/2026', '03/2026'],
-                    datasets: [
-                        { label: 'Faturado', data: [187010, 35610, 22416, 10647, 56875], borderColor: '#cbd5e1', borderDash: [5, 5], fill: false, tension: 0.4 },
-                        { label: 'Repasse', data: [171524, 35610, 21080, 9475, 42201], borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            if (chartDonutStatus) chartDonutStatus.destroy();
-            chartDonutStatus = new Chart(document.getElementById('graficoDonutStatus').getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['A Pagar', 'Auditado', 'Pago'],
-                    datasets: [{ 
-                        data: [statusData["A Pagar"], statusData["Auditada"], statusData["Paga"]], 
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'] 
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-            });
+            // Gráfico de Linha da Home
+            if(document.getElementById('graficoEvolucao')){
+                if (chartEvolucao) chartEvolucao.destroy();
+                chartEvolucao = new Chart(document.getElementById('graficoEvolucao').getContext('2d'), { type: 'line', data: { labels: ['Histórico Inicial', 'Competência Corrente'], datasets: [{ label: 'Cobrado', data: [124003, apagar + auditado], borderColor: '#cbd5e1', fill: false }, { label: 'Liberado', data: [112842, apagar], borderColor: '#2563eb', fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
+            }
+            // Donut Geral da Home
+            if(document.getElementById('graficoDonutStatusGeral')){
+                if (chartDonutStatusGeral) chartDonutStatusGeral.destroy();
+                chartDonutStatusGeral = new Chart(document.getElementById('graficoDonutStatusGeral').getContext('2d'), { type: 'doughnut', data: { labels: ['A Pagar', 'Auditado', 'Pago'], datasets: [{ data: [stData["A Pagar"], stData["Auditada"], stData["Paga"]], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%' } });
+            }
+            // Donut Exclusivo da Aba Lançar Faturas (Lado a lado com formulário)
+            if(document.getElementById('graficoDonutStatus')){
+                if (chartDonutStatus) chartDonutStatus.destroy();
+                chartDonutStatus = new Chart(document.getElementById('graficoDonutStatus').getContext('2d'), { type: 'doughnut', data: { labels: ['A Pagar', 'Auditado', 'Pago'], datasets: [{ data: [apagar, auditado, pago], backgroundColor: ['#fdab3d', '#3b82f6', '#00c875'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' } });
+            }
         }
 
-        function renderizarTabelas(totFat, totAud, totRep) {
+        function renderizarTabelaHistorial() {
+            const corpo = document.getElementById('tabela-extrato');
             const corpoDash = document.getElementById('dash-movimentacoes');
-            if(!corpoDash) return;
-            const competentes2026 = todasContasLocais.filter(x => x.competencia.endsWith("2026"));
-            
-            corpoDash.innerHTML = competentes2026.map(c => {
-                return `<tr class="hover:bg-slate-50/80 transition-all">
-                    <td class="py-3 px-6 font-bold text-slate-900">${c.prestador}</td>
-                    <td class="py-3 px-6 text-center text-slate-500 font-mono">${c.competencia}</td>
-                    <td class="py-3 px-6 text-right font-mono">R$ ${c.valor_faturado.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3 px-6 text-right text-red-500 font-semibold font-mono">R$ ${c.valor_auditado.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3 px-6 text-center"><span class="bg-amber-50 text-amber-600 px-2.5 py-0.5 rounded-md font-bold text-[10px]">${c.status}</span></td>
+            if(!corpo) return;
+
+            if(todasContasLocais.length === 0){
+                corpo.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-400">Nenhum registro encontrado no sistema.</td></tr>`;
+                if(corpoDash) corpoDash.innerHTML = `<tr><td colspan="5" class="py-4 text-center">Nenhum registro.</td></tr>`;
+                return;
+            }
+
+            let htmlString = "";
+            let htmlDash = "";
+            todasContasLocais.forEach(c => {
+                const fat = parseFloat(c.valor_faturado) || 0;
+                const aud = parseFloat(c.valor_auditado) || 0;
+                const aco = fat - aud;
+                const mat = parseFloat(c.valor_matmed_total) || 0;
+
+                htmlString += `<tr class="hover:bg-slate-50 border-b border-slate-100 text-[11px]">
+                    <td class="py-3 px-4 text-center font-mono">${c.competencia}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">${c.prestador}</td>
+                    <td class="py-3 px-4 text-slate-500">${c.setor || 'GERAL'} / ${c.grupo || 'GERAL'}</td>
+                    <td class="py-3 px-4 text-right font-mono">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-blue-600">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-slate-900">R$ ${aco.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-purple-600">R$ ${mat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-center">${c.atraso ? c.atraso + ' dias' : '-'}</td>
+                    <td class="py-3 px-4 text-center"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px]">${c.status}</span></td>
+                    <td class="py-3 px-4 text-center no-print space-x-2">
+                        <button onclick="prepararEdicao('${c.timestamp}')" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deletarFaturaDirect('${c.timestamp}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-square-xmark"></i></button>
+                    </td>
                 </tr>`;
+
+                htmlDash += `<tr class="border-b border-slate-100"><td class="py-2 px-4 font-bold">${c.prestador}</td><td class="py-2 px-4 text-center font-mono">${c.competencia}</td><td class="py-2 px-4 text-right font-mono">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-2 px-4 text-right font-mono text-red-500">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-2 px-4 text-center"><span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded">${c.status}</span></td></tr>`;
+            });
+            corpo.innerHTML = htmlString;
+            if(corpoDash) corpoDash.innerHTML = htmlDash;
+        }
+
+        function filtrarExtratoExclusivo() {
+            const fNome = document.getElementById('filtro-nome')?.value.toLowerCase() || '';
+            const corpo = document.getElementById('tabela-extrato-geral');
+            if(!corpo) return;
+
+            const filtradas = todasContasLocais.filter(c => c.prestador.toLowerCase().includes(fNome));
+            corpo.innerHTML = filtradas.map(c => {
+                const fat = parseFloat(c.valor_faturado) || 0;
+                const aud = parseFloat(c.valor_auditado) || 0;
+                return `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-3 px-4 text-center font-mono">${c.competencia}</td><td class="py-3 px-4 font-bold">${c.prestador}</td><td class="py-3 px-4 text-right font-mono">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-3 px-4 text-right font-mono text-blue-600">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-3 px-4 text-right font-mono">R$ ${(fat - aud).toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-amber-50 font-bold rounded text-[10px]">${c.status}</span></td></tr>`;
             }).join('');
-
-            document.getElementById('tot-foot-faturado').innerText = 'R$ ' + totFat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('tot-foot-auditado').innerText = 'R$ ' + totAud.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('tot-foot-repasse').innerText = 'R$ ' + totRep.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-
-            filtrarExtrato();
         }
 
-        function filtrarExtrato() {
-            const nome = document.getElementById('filtro-nome').value.toLowerCase();
-            const comp = document.getElementById('filtro-comp').value;
-            const status = document.getElementById('filtro-status').value;
-            const corpoExtrato = document.getElementById('tabela-extrato');
-            if(!corpoExtrato) return;
-            
-            const filtradas = todasContasLocais.filter(c => {
-                return c.prestador.toLowerCase().includes(nome) && 
-                       (comp === "Todas" || c.competencia === comp) && 
-                       (status === "Todos" || c.status === status);
-            });
-
-            corpoExtrato.innerHTML = filtradas.map(c => {
-                const repasse = c.valor_faturado - c.valor_auditado;
-                return `<tr class="hover:bg-slate-50 transition-all">
-                    <td class="py-3.5 px-5 text-center font-mono text-slate-500">${c.competencia}</td>
-                    <td class="py-3.5 px-5 font-bold text-slate-900">${c.prestador}</td>
-                    <td class="py-3.5 px-5 text-xs text-slate-500 font-semibold">${c.setor || 'GERAL'}</td>
-                    <td class="py-3.5 px-5 text-right font-mono text-slate-600">R$ ${c.valor_faturado.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3.5 px-5 text-right font-mono text-red-500">R$ ${c.valor_auditado.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3.5 px-5 text-right font-mono text-blue-600">R$ ${repasse.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3.5 px-5 text-center text-slate-400 font-mono">${c.atraso ? c.atraso+'d' : '--'}</td>
-                    <td class="py-3.5 px-5 text-center"><span class="bg-amber-50 text-amber-700 border border-amber-200/50 px-2 py-0.5 rounded font-bold text-[10px]">${c.status}</span></td>
-                    <td class="py-3.5 px-5 text-center no-print"><button onclick="prepararEdicao('${c.timestamp}')" class="text-blue-600 hover:text-blue-800 font-bold cursor-pointer"><i class="fa-solid fa-pen-to-square"></i></button></td>
-                </tr>`;
-            }).join('');
-        }
-
-        // --- SISTEMA INTERNO DO SCRIPT DO MONDAY (TAREFAS OPERACIONAIS) ---
-        function emitTaskLog(msg) {
-            const hora = new Date().toLocaleTimeString();
-            logsPainel.unshift(`[${hora}] ${msg}`);
-            if (logsPainel.length > 15) logsPainel.pop();
-            localStorage.setItem('monday_standalone_logs', JSON.stringify(logsPainel));
-            
-            const lEl = document.getElementById('log-task-auditoria');
-            if (lEl) lEl.innerHTML = logsPainel.map(l => `<div>${l}</div>`).join('');
-        }
-
-        function computeDateIndicator(deadlineStr) {
-            if(!deadlineStr) return { html: `<span class="text-slate-400">--</span>` };
-            
-            const targetDate = new Date(deadlineStr + 'T00:00:00');
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            
-            const diffTime = targetDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            const parts = deadlineStr.split('-');
-            const formattedDate = `${parts[2]}/${parts[1]}`;
-
-            if (diffDays < 0) {
-                return {
-                    html: `<div class="text-center"><span class="text-red-500 font-bold block">${formattedDate}</span><span class="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.2 rounded font-black uppercase">Atrasado ${Math.abs(diffDays)}d</span></div>`
-                };
-            } else if (diffDays === 0) {
-                return {
-                    html: `<div class="text-center"><span class="text-amber-500 font-bold block">${formattedDate}</span><span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-black uppercase">Entrega Hoje</span></div>`
-                };
-            } else {
-                return {
-                    html: `<div class="text-center"><span class="text-slate-700 font-medium block">${formattedDate}</span><span class="text-[10px] text-slate-400 block">Faltam ${diffDays} dias</span></div>`
-                };
-            }
-        }
-
-        window.renderPainelTarefas = function() {
-            const tbody = document.getElementById('container-tarefas');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-
-            painelTarefas.forEach(t => {
-                const dateMeta = computeDateIndicator(t.data);
-                let instanceBadgeClass = "instance-1st";
-                if(t.instancia === "2a Instância") instanceBadgeClass = "instance-2nd";
-                if(t.instancia === "3a Instância") instanceBadgeClass = "instance-3rd";
-
-                tbody.innerHTML += `<tr class="hover:bg-slate-50/80 border-b border-slate-100">
-                    <td class="py-2.5 px-4"><span class="bg-slate-200 text-slate-700 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">${t.setor || 'Geral'}</span></td>
-                    <td class="py-2.5 px-4 font-bold text-slate-950">${t.nome}</td>
-                    <td class="py-2.5 px-4 font-semibold text-slate-600"><i class="fa-solid fa-circle-user text-slate-400 mr-1"></i>${t.responsavel}</td>
-                    <td class="py-2.5 px-4 text-center">
-                        <select class="monday-select px-2.5 py-1 rounded text-[10px] font-extrabold text-white tracking-wide w-44 ${instanceBadgeClass}" onchange="changeTaskInstance('${t.id}', this.value)">
-                            <option value="1a Instância" ${t.instancia === '1a Instância' ? 'selected' : ''}>1ª Inst. (Auditoria Interna)</option>
-                            <option value="2a Instância" ${t.instancia === '2a Instância' ? 'selected' : ''}>2ª Inst. (Coord. Faturamento)</option>
-                            <option value="3a Instância" ${t.instancia === '3a Instância' ? 'selected' : ''}>3ª Inst. (Robson Farias)</option>
-                        </select>
-                    </td>
-                    <td class="py-2.5 px-4">${dateMeta.html}</td>
-                    <td class="py-2.5 px-4 text-center">
-                        <select class="monday-select px-2 py-0.5 rounded text-[10px] uppercase w-20 priority-${t.prioridade === 'Alta' ? 'high' : (t.prioridade === 'Média' ? 'medium' : 'low')}" onchange="changeTaskPriority('${t.id}', this.value)">
-                            <option value="Alta" ${t.prioridade === 'Alta' ? 'selected' : ''}>Alta</option>
-                            <option value="Média" ${t.prioridade === 'Média' ? 'selected' : ''}>Média</option>
-                            <option value="Baixa" ${t.prioridade === 'Baixa' ? 'selected' : ''}>Baixa</option>
-                        </select>
-                    </td>
-                    <td class="py-2.5 px-4 text-center">
-                        <select class="monday-select px-2 py-0.5 rounded text-[10px] uppercase w-24 status-${t.status}" onchange="changeTaskStatus('${t.id}', this.value)">
-                            <option value="backlog" ${t.status === 'backlog' ? 'selected' : ''}>Backlog</option>
-                            <option value="working" ${t.status === 'working' ? 'selected' : ''}>Trabalhando</option>
-                            <option value="stuck" ${t.status === 'stuck' ? 'selected' : ''}>Travado</option>
-                            <option value="done" ${t.status === 'done' ? 'selected' : ''}>Concluído</option>
-                        </select>
-                    </td>
-                    <td class="py-2.5 px-4 text-center">
-                        <button onclick="deleteTaskDirect('${t.id}')" class="text-slate-400 hover:text-red-500 cursor-pointer text-xs"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                </tr>`;
-            });
-
-            calculateTaskMetrics();
-            updateTaskCharts();
-            localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
-        };
-
-        function calculateTaskMetrics() {
-            const tot = painelTarefas.length;
-            const stuck = painelTarefas.filter(t => t.status === 'stuck').length;
-            const done = painelTarefas.filter(t => t.status === 'done').length;
-            const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
-
-            const totalEl = document.getElementById('kpi-task-total');
-            if(totalEl) totalEl.innerText = tot;
-            
-            const stuckEl = document.getElementById('kpi-task-stuck');
-            if(stuckEl) stuckEl.innerText = stuck;
-            
-            const progressEl = document.getElementById('kpi-task-progress');
-            if(progressEl) progressEl.innerText = `${pct}%`;
-            
-            const fillEl = document.getElementById('task-bar-fill');
-            if(fillEl) fillEl.style.width = `${pct}%`;
-            
-            const txtProgress = document.getElementById('txt-gauge-task-progress');
-            if (txtProgress) txtProgress.innerText = `${pct}%`;
-        }
-
-        window.changeTaskStatus = function(id, status) {
-            const t = painelTarefas.find(x => x.id === id);
-            if(t) {
-                const antigo = t.status;
-                t.status = status;
-                emitTaskLog(`Status de "${t.nome}" alterado de [${antigo}] para [${status}].`);
-                renderPainelTarefas();
-            }
-        };
-
-        window.changeTaskPriority = function(id, prio) {
-            const t = painelTarefas.find(x => x.id === id);
-            if(t) {
-                const antiga = t.prioridade;
-                t.prioridade = prio;
-                emitTaskLog(`Prioridade de "${t.nome}" mudou de [${antiga}] para [${prio}].`);
-                renderPainelTarefas();
-            }
-        };
-
-        window.changeTaskInstance = function(id, novaInstancia) {
-            const t = painelTarefas.find(x => x.id === id);
-            if(t) {
-                const antiga = t.instancia;
-                t.instancia = novaInstancia;
-                emitTaskLog(`Alça de Escalabilidade: Atividade "${t.nome}" transferida de [${antiga}] para [${novaInstancia}].`);
-                renderPainelTarefas();
-            }
-        };
-
-        window.deleteTaskDirect = function(id) {
-            const t = painelTarefas.find(x => x.id === id);
-            if(t && confirm(`Excluir a tarefa "${t.nome}" do fluxo permanente?`)) {
-                painelTarefas = painelTarefas.filter(x => x.id !== id);
-                emitTaskLog(`Tarefa "${t.nome}" removida pelo supervisor.`);
-                renderPainelTarefas();
-            }
-        };
-
-        // INICIALIZAÇÃO DOS GRAFICOS DE TAREFAS
-        function initTaskCharts() {
-            const ctxGauge = document.getElementById('gaugeTaskProgress');
-            if(!ctxGauge) return;
-            gaugeTaskProgress = new Chart(ctxGauge.getContext('2d'), {
-                type: 'doughnut',
-                data: { datasets: [{ data: [0, 100], backgroundColor: ['#00c875', '#e2e8f0'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, plugins: { legend: { display: false } }, cutout: '80%' }
-            });
-
-            const ctxProd = document.getElementById('chartTaskProdutividade').getContext('2d');
-            chartTaskProdutividade = new Chart(ctxProd, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: '#0284c7', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } }, plugins: { legend: { display: false } } }
-            });
-
-            const ctxInst = document.getElementById('chartTaskInstancia').getContext('2d');
-            chartTaskInstancia = new Chart(ctxInst, {
-                type: 'doughnut',
-                data: { labels: ['1ª Inst.', '2ª Inst.', '3ª Inst.'], datasets: [{ data: [0,0,0], backgroundColor: ['#0284c7', '#0f766e', '#1e1b4b'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } } }
-            });
-        }
-
-        function updateTaskCharts() {
-            if(!gaugeTaskProgress || !chartTaskProdutividade || !chartTaskInstancia) return;
-
-            const tot = painelTarefas.length;
-            const done = painelTarefas.filter(t => t.status === 'done').length;
-            const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
-
-            gaugeTaskProgress.data.datasets[0].data = [pct, Math.max(0, 100 - pct)];
-            gaugeTaskProgress.update();
-
-            const countExecutores = {};
-            painelTarefas.forEach(t => countExecutores[t.responsavel] = (countExecutores[t.responsavel] || 0) + 1);
-            chartTaskProdutividade.data.labels = Object.keys(countExecutores);
-            chartTaskProdutividade.data.datasets[0].data = Object.values(countExecutores);
-            chartTaskProdutividade.update();
-
-            const inst1 = painelTarefas.filter(t => t.instancia === '1a Instância').length;
-            const inst2 = painelTarefas.filter(t => t.instancia === '2a Instância').length;
-            const inst3 = painelTarefas.filter(t => t.instancia === '3a Instância').length;
-            chartTaskInstancia.data.datasets[0].data = [inst1, inst2, inst3];
-            chartTaskInstancia.update();
-        }
-
-        // --- ENGENHARIA DE EVENTOS DO CORE ---
         function mapearEventosInjetados() {
             document.getElementById('form-conciliacao').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const fat = parseFloat(document.getElementById('form-faturado').value) || 0;
-                const aud = parseFloat(document.getElementById('form-auditado').value) || 0;
-                const tsExistente = document.getElementById('conta-timestamp').value;
-
-                let db = JSON.parse(localStorage.getItem('db.json'));
-
+                let db = JSON.parse(localStorage.getItem('db.json')) || { ultimas_contas: [] };
+                
                 const novaConta = {
-                    timestamp: tsExistente || 'ts_' + Date.now(),
+                    timestamp: document.getElementById('conta-timestamp').value || 'ts_' + Date.now(),
                     competencia: document.getElementById('form-competencia').value,
                     prestador: document.getElementById('form-prestador').value.toUpperCase(),
                     setor: document.getElementById('form-setor').value.toUpperCase() || 'GERAL',
-                    valor_faturado: fat,
-                    valor_auditado: aud,
+                    grupo: document.getElementById('form-grupo').value.toUpperCase() || 'GERAL',
+                    valor_faturado: parseFloat(document.getElementById('form-faturado').value) || 0,
+                    valor_auditado: parseFloat(document.getElementById('form-auditado').value) || 0,
+                    valor_matmed_total: parseFloat(document.getElementById('form-matmed-total').value) || 0,
                     atraso: parseInt(document.getElementById('form-atraso').value) || 0,
                     status: document.getElementById('form-status').value
                 };
 
-                if (tsExistente) {
-                    const index = db.ultimas_contas.findIndex(c => c.timestamp === tsExistente);
-                    if(index !== -1) db.ultimas_contas[index] = novaConta;
-                } else {
-                    db.ultimas_contas.unshift(novaConta);
-                }
-
+                const idx = db.ultimas_contas.findIndex(c => c.timestamp === novaConta.timestamp);
+                if(idx !== -1) db.ultimas_contas[idx] = novaConta; else db.ultimas_contas.unshift(novaConta);
+                
                 localStorage.setItem('db.json', JSON.stringify(db));
-                limparFormulario(); 
-                carregarDadosCompletos(); 
-                alternarAba('aba-dashboard');
+                limparFormulario(); carregarDadosCompletos();
             });
-
-            document.getElementById('form-tarefa').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const nIn = document.getElementById('add-task-nome');
-                const rIn = document.getElementById('add-task-responsavel');
-                const sIn = document.getElementById('add-task-setor');
-                const iIn = document.getElementById('add-task-instancia');
-                const dIn = document.getElementById('add-task-data');
-                const pIn = document.getElementById('add-task-prio');
-
-                painelTarefas.push({ 
-                    id: 'tk_' + Date.now(), 
-                    nome: nIn.value, 
-                    responsavel: rIn.value, 
-                    instancia: iIn.value,
-                    setor: sIn.value,
-                    data: dIn.value,
-                    prioridade: pIn.value, 
-                    status: 'working' 
-                });
-                
-                emitTaskLog(`Nova demanda mapeada: "${nIn.value}" alocada em [${iIn.value}].`);
-                
-                nIn.value = ''; 
-                rIn.value = '';
-                dIn.value = '';
-                
-                renderPainelTarefas();
-            });
-            emitTaskLog("Mapeamento de processos operacionais updated.");
         }
 
         window.prepararEdicao = function(ts) {
-            const conta = todasContasLocais.find(c => c.timestamp === ts);
-            if (!conta) return;
-            document.getElementById('conta-timestamp').value = conta.timestamp;
-            document.getElementById('form-prestador').value = conta.prestador;
-            document.getElementById('form-setor').value = conta.setor || '';
-            document.getElementById('form-atraso').value = conta.atraso || '';
-            document.getElementById('form-competencia').value = conta.competencia;
-            document.getElementById('form-faturado').value = conta.valor_faturado;
-            document.getElementById('form-auditado').value = conta.valor_auditado;
-            document.getElementById('form-status').value = conta.status;
+            const c = todasContasLocais.find(x => x.timestamp === ts); if (!c) return;
+            document.getElementById('conta-timestamp').value = c.timestamp;
+            document.getElementById('form-competencia').value = c.competencia;
+            document.getElementById('form-atraso').value = c.atraso || 0;
+            document.getElementById('form-prestador').value = c.prestador;
+            document.getElementById('form-setor').value = c.setor || '';
+            document.getElementById('form-grupo').value = c.grupo || '';
+            document.getElementById('form-faturado').value = c.valor_faturado;
+            document.getElementById('form-auditado').value = c.valor_auditado || 0;
+            document.getElementById('form-matmed-total').value = c.valor_matmed_total || 0;
+            document.getElementById('form-status').value = c.status;
             
-            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-file-pen text-amber-500 mr-1"></i> Editando Lançamento Ativo`;
-            document.getElementById('indicador-modo').classList.remove('hidden');
-            alternarAba('aba-contas');
+            // Força o recálculo do campo Repasse (que é apenas leitura) no formulário de edição
+            document.getElementById('form-faturado').dispatchEvent(new Event('input'));
+            document.getElementById('form-titulo').innerText = "Editando Registro Ativo";
         };
 
-        window.limparFormulario = function() {
-            document.getElementById('form-conciliacao').reset();
+        window.limparFormulario = function() { 
+            document.getElementById('form-conciliacao')?.reset(); 
             document.getElementById('conta-timestamp').value = '';
-            document.getElementById('form-titulo').innerHTML = `<i class="fa-solid fa-file-circle-plus text-blue-600 mr-1"></i> Gestão e Lançamento de Faturas`;
-            document.getElementById('indicador-modo').classList.add('hidden');
+            document.getElementById('form-titulo').innerText = "Lançamento e Conciliação";
         };
 
-        // EXPORTAÇÃO UNIFICADA: Salva faturas + tarefas no mesmo arquivo JSON
-        window.exportarJson = function() {
-            const dbFaturas = JSON.parse(localStorage.getItem('db.json')) || { ultimas_contas: [] };
+        window.deletarFaturaDirect = function(ts) {
+            let db = JSON.parse(localStorage.getItem('db.json'));
+            if(confirm("Deseja deletar essa fatura permanentemente?")) {
+                db.ultimas_contas = db.ultimas_contas.filter(x => x.timestamp !== ts);
+                localStorage.setItem('db.json', JSON.stringify(db));
+                carregarDadosCompletos();
+            }
+        };
+
+        // ==========================================
+        // MOTOR 2: QUADRO DE TAREFAS ESTILO MONDAY   
+        // ==========================================
+        window.renderPainelTarefas = function() {
+            const tbody = document.getElementById('container-tarefas');
+            if(!tbody) return; tbody.innerHTML = '';
             
-            // Cria um super objeto consolidando faturas e quadro de tarefas
-            const backupCompleto = {
-                ultimas_contas: dbFaturas.ultimas_contas,
-                quadro_tarefas_backup: painelTarefas
-            };
+            painelTarefas.forEach(t => {
+                let cStatus = "status-working";
+                if(t.status === "done") cStatus = "status-done";
+                if(t.status === "stuck") cStatus = "status-stuck";
+                if(t.status === "backlog") cStatus = "status-backlog";
 
-            const blob = new Blob([JSON.stringify(backupCompleto, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'db.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+                let cPrio = "priority-medium";
+                if(t.prioridade === "Alta") cPrio = "priority-high";
+                if(t.prioridade === "Baixa") cPrio = "priority-low";
+
+                tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition-all text-xs">
+                    <td class="py-2.5 px-4"><span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded uppercase font-bold text-[10px]">${t.setor}</span></td>
+                    <td class="py-2.5 px-4 font-bold text-slate-900">${t.nome}</td>
+                    <td class="py-2.5 px-4">${t.responsavel}</td>
+                    <td class="py-2.5 px-4 text-center">${t.instancia}</td>
+                    <td class="py-2.5 px-4 text-center font-mono">${t.data}</td>
+                    <td class="py-2.5 px-4 text-center"><span class="${cPrio} text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">${t.prioridade}</span></td>
+                    <td class="py-2.5 px-4 text-center">
+                        <select onchange="atualizarStatusTarefa('${t.id}', this.value)" class="monday-select ${cStatus} px-2 py-1 rounded text-[11px] font-bold w-28 text-center focus:outline-none">
+                            <option value="working" ${t.status === 'working' ? 'selected' : ''}>Trabalhando</option>
+                            <option value="done" ${t.status === 'done' ? 'selected' : ''}>Feito</option>
+                            <option value="stuck" ${t.status === 'stuck' ? 'selected' : ''}>Travado</option>
+                            <option value="backlog" ${t.status === 'backlog' ? 'selected' : ''}>Backlog</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-4 text-center"><button onclick="deleteTaskDirect('${t.id}')" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button></td>
+                </tr>`;
+            });
+            calculateTaskMetrics(); updateTaskCharts();
         };
 
-        // IMPORTAÇÃO UNIFICADA: Restaura faturas e tarefas de uma vez só
-        window.processarImportacaoJson = function(event) {
-            const arquivo = event.target.files[0];
-            if (!arquivo) return;
-            const leitor = new FileReader();
-            leitor.onload = function(e) {
-                try {
-                    const conteudoJson = JSON.parse(e.target.result);
-                    if (conteudoJson && Array.isArray(conteudoJson.ultimas_contas)) {
-                        
-                        // Restaura a parte de faturas
-                        const estruturaFaturas = { ultimas_contas: conteudoJson.ultimas_contas };
-                        localStorage.setItem('db.json', JSON.stringify(estruturaFaturas));
-                        
-                        // Restaura o quadro de tarefas se ele existir no arquivo importado
-                        if (conteudoJson.quadro_tarefas_backup && Array.isArray(conteudoJson.quadro_tarefas_backup)) {
-                            painelTarefas = conteudoJson.quadro_tarefas_backup;
-                            localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
-                        }
-
-                        carregarDadosCompletos();
-                        renderPainelTarefas();
-                        
-                        alert('Base de dados completa (Faturas + Quadro de Tarefas) atualizada com sucesso!');
-                        event.target.value = '';
-                    } else { 
-                        alert('Formato de arquivo inválido!'); 
-                    }
-                } catch (erro) { 
-                    alert('Erro crítico ao processar o arquivo JSON unificado.'); 
-                }
-            };
-            leitor.readAsText(arquivo);
+        window.mapearEventosTarefas = function() {
+            document.getElementById('form-tarefa')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nt = {
+                    id: 'tk_' + Date.now(),
+                    nome: document.getElementById('add-task-nome').value,
+                    setor: document.getElementById('add-task-setor').value,
+                    responsavel: document.getElementById('add-task-responsavel').value,
+                    instancia: document.getElementById('add-task-instancia').value,
+                    data: document.getElementById('add-task-data').value,
+                    prioridade: document.getElementById('add-task-prio').value,
+                    status: 'working'
+                };
+                painelTarefas.push(nt);
+                localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
+                document.getElementById('form-tarefa').reset();
+                renderPainelTarefas();
+            });
         };
+
+        window.atualizarStatusTarefa = function(id, st) {
+            let t = painelTarefas.find(x => x.id === id);
+            if(t) { t.status = st; localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas)); renderPainelTarefas(); }
+        };
+
+        window.deleteTaskDirect = function(id) {
+            if(confirm("Excluir essa tarefa permanentemente?")) {
+                painelTarefas = painelTarefas.filter(x => x.id !== id);
+                localStorage.setItem('monday_standalone_tasks', JSON.stringify(painelTarefas));
+                renderPainelTarefas();
+            }
+        };
+
+        function calculateTaskMetrics() {
+            const tot = painelTarefas.length; 
+            const done = painelTarefas.filter(t => t.status === 'done').length;
+            const stuck = painelTarefas.filter(t => t.status === 'stuck').length;
+            const pct = tot > 0 ? Math.round((done / tot) * 100) : 0;
+            if(document.getElementById('kpi-task-total')) document.getElementById('kpi-task-total').innerText = tot;
+            if(document.getElementById('kpi-task-stuck')) document.getElementById('kpi-task-stuck').innerText = stuck;
+            if(document.getElementById('kpi-task-progress')) document.getElementById('kpi-task-progress').innerText = `${pct}%`;
+            if(document.getElementById('txt-gauge-task-progress')) document.getElementById('txt-gauge-task-progress').innerText = `${pct}%`;
+        }
+
+        function initTaskCharts() {
+            if(!document.getElementById('gaugeTaskProgress')) return;
+            gaugeTaskProgress = new Chart(document.getElementById('gaugeTaskProgress').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: ['#00c875', '#e2e8f0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, cutout: '80%' } });
+            chartTaskProdutividade = new Chart(document.getElementById('chartTaskProdutividade').getContext('2d'), { type: 'bar', data: { labels: ['Ana', 'Carlos', 'Robson'], datasets: [{ data: [1, 1, 1], backgroundColor: '#0284c7' }] }, options: { responsive: true, maintainAspectRatio: false } });
+            chartTaskInstancia = new Chart(document.getElementById('chartTaskInstancia').getContext('2d'), { type: 'doughnut', data: { labels: ['1ª Inst.', '2ª Inst.', '3ª Inst.'], datasets: [{ data: [1, 1, 1], backgroundColor: ['#0284c7', '#0f766e', '#1e1b4b'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        }
+
+        function updateTaskCharts() {
+            if(!gaugeTaskProgress) return;
+            const tot = painelTarefas.length; const done = painelTarefas.filter(t => t.status === 'done').length;
+            gaugeTaskProgress.data.datasets[0].data = [done, Math.max(0, tot - done)]; gaugeTaskProgress.update();
+        }
+
+        // Importação e exportação de backups do sistema
+        window.exportarJson = function() { const db = JSON.parse(localStorage.getItem('db.json')); const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'db.json'; a.click(); };
+        window.processarImportacaoJson = function(e) { const f = e.target.files[0]; if (!f) return; const reader = new FileReader(); reader.onload = function(evt) { try { const parsed = JSON.parse(evt.target.result); if(parsed && parsed.ultimas_contas) { localStorage.setItem('db.json', JSON.stringify(parsed)); carregarDadosCompletos(); alert('Dados importados!'); } }catch(err){alert('Arquivo inválido.');} }; reader.readAsText(f); };
     </script>
 </body>
 </html>
