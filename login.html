@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Labdiag</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .shadow-neon { box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.1), 0 8px 10px -6px rgba(37, 99, 235, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-900 font-sans h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-neon overflow-hidden border border-slate-100 transition-all">
+        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-8 text-center text-white relative">
+            <div class="absolute top-4 right-4 text-xs bg-blue-500/30 px-2 py-0.5 rounded-full backdrop-blur-sm">v5.5.0</div>
+            <div class="flex justify-center mb-3">
+                <img src="logo.png" alt="Logo Labdiag" class="h-16 w-auto object-contain drop-shadow-md" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='inline-block';">
+                <div id="logo-fallback" class="hidden bg-white text-blue-700 font-black text-2xl p-3 rounded-xl shadow-md">LD</div>
+            </div>
+            <h2 class="text-xl font-bold tracking-wider uppercase">Labdiag</h2>
+            <p class="text-blue-200 text-xs mt-1">Sistema Integrado de Auditoria e Glosas Hospitalares</p>
+        </div>
+
+        <form id="form-login" class="p-8 space-y-5">
+            <div id="mensagem-erro" class="hidden bg-red-50 border border-red-200 text-red-600 text-xs font-bold p-3 rounded-lg flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="erro-texto">Usuário ou senha incorretos.</span>
+            </div>
+
+            <div class="space-y-1">
+                <label for="usuario" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Usuário / ID</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" id="usuario" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white font-medium" placeholder="Digite seu usuário">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label for="senha" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Senha Secreta</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" id="senha" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-10 text-sm text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white font-medium" placeholder="••••••••">
+                    <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
+                        <i id="icone-olho" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 mt-2">
+                <span>Entrar no Sistema</span>
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+        </form>
+        <div class="bg-slate-50 px-8 py-4 border-t border-slate-100 text-center text-[10px] text-slate-400 font-medium uppercase tracking-wider">Acesso Restrito • Monitorado</div>
+    </div>
+
+    <script>
+        function alternarVisibilidadeSenha() {
+            const campoSenha = document.getElementById('senha');
+            const iconeOlho = document.getElementById('icone-olho');
+            if (campoSenha.type === 'password') {
+                campoSenha.type = 'text';
+                iconeOlho.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                campoSenha.type = 'password';
+                iconeOlho.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+            const msgErro = document.getElementById('mensagem-erro');
+
+            msgErro.classList.add('hidden');
+
+            if (usuario === "admin" && senha === "1234") {
+                // SALVA O ACESSO NO NAVEGADOR
+                localStorage.setItem('labdiag_logado', 'true');
+                window.location.href = "painelfin.html";
+            } else {
+                document.getElementById('erro-texto').innerText = "Usuário ou senha inválidos.";
+                msgErro.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
