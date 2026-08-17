@@ -6,15 +6,15 @@
     <title>Métricas Analíticas e Visão Geral - Labdiag</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
         .ticker-container { overflow: hidden; white-space: nowrap; }
         .ticker-conteudo { display: inline-block; animation: ticker 40s linear infinite; }
         .ticker-container:hover .ticker-conteudo { animation-play-state: paused; }
         .neon-text-green { text-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
-        .neon-text-red { text-shadow: 0 0 6px rgba(248, 113, 113, 0.6); }
 
-        /* Estilos do Quadro de Tarefas (Estilo Monday) */
         .monday-select { appearance: none; -webkit-appearance: none; text-align: center; font-weight: 800; color: white; cursor: pointer; transition: all 0.2s ease; border: none; }
         .status-working { background-color: #fdab3d; }
         .status-done { background-color: #00c875; }
@@ -25,18 +25,25 @@
         .priority-medium { background-color: #a25ddc; }
         .priority-low { background-color: #55596e; }
 
+        .sticky-kpi-panel { position: sticky; top: 73px; z-index: 40; }
+
+        /* REGRA EXCLUSIVA PARA IMPRESSÃO PERFEITA DO RELATÓRIO */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: white !important; color: black !important; }
             .w-64, header, .no-print, button, input, select { display: none !important; }
-            .flex-1, #estrutura-sistema, #corpo-principal { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; height: auto !important;}
+            .flex-1, #estrutura-sistema, #corpo-principal, main { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; height: auto !important; }
+            #aba-extrato { display: block !important; }
+            #area-relatorio-extrato { border: none !important; shadow: none !important; padding: 0 !important; margin: 0 !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { border-bottom: 1px solid #cbd5e1 !important; }
+            tfoot { display: table-footer-group !important; }
         }
     </style>
 </head>
 <body class="bg-slate-900 font-sans text-slate-800 min-h-screen flex items-center justify-center m-0" id="corpo-principal">
 
-    <!-- ========================================== -->
-    <!-- TELA DE LOGIN                              -->
-    <!-- ========================================== -->
+    <!-- TELA DE LOGIN -->
     <div id="bloco-autenticacao" class="w-full max-w-md mx-4 transition-all duration-300 block">
         <div class="bg-white p-8 rounded-2xl shadow-2xl border border-slate-800/10">
             <div class="text-center mb-8">
@@ -46,14 +53,14 @@
             </div>
             <form id="form-login" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Utilizador</label>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Usuário</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-400 text-sm"></i>
                         <input type="text" id="login-user" value="admin" required class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500 bg-slate-50">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Palavra-passe</label>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Senha</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-400 text-sm"></i>
                         <input type="password" id="login-pass" value="1234" required class="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500 bg-slate-50">
@@ -73,9 +80,7 @@
     <div id="estrutura-sistema" class="w-full h-screen flex overflow-hidden hidden bg-slate-50"></div>
 
     <template id="template-admin">
-        <!-- ========================================== -->
-        <!-- MENU LATERAL (NAVEGAÇÃO)                   -->
-        <!-- ========================================== -->
+        <!-- MENU LATERAL -->
         <div class="w-64 bg-slate-900 text-white flex flex-col justify-between p-5 border-r border-slate-800 no-print shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-8">
@@ -95,6 +100,9 @@
                     <button onclick="alternarAba('aba-extrato')" id="btn-aba-extrato" class="w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer">
                         <i class="fa-solid fa-file-signature w-5"></i> Extrato de Auditoria
                     </button>
+                    <button onclick="alternarAba('aba-repasse')" id="btn-aba-repasse" class="w-full flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer">
+                        <i class="fa-solid fa-scale-balanced w-5"></i> Análise de Repasse
+                    </button>
                     
                     <input type="file" id="input-importar-json" accept=".json" onchange="processarImportacaoJson(event)" class="hidden">
                     <button onclick="document.getElementById('input-importar-json').click()" class="w-full flex items-center gap-3 text-blue-400 hover:bg-blue-950/40 hover:text-blue-300 px-4 py-3 rounded-lg font-medium text-left transition-all cursor-pointer mt-4 border border-blue-800/40 bg-blue-950/10">
@@ -108,10 +116,10 @@
                     </button>
                 </nav>
             </div>
-            <div class="text-sm text-slate-500">v6.3.0 • Real dataset</div>
+            <div class="text-sm text-slate-500">v6.5.0 • Strategic Intelligence</div>
         </div>
 
-        <!-- CORPO PRINCIPAL DE CONTEÚDO -->
+        <!-- CORPO PRINCIPAL -->
         <div class="flex-1 flex flex-col overflow-y-auto">
             <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm sticky top-0 z-50 no-print shrink-0">
                 <div>
@@ -123,9 +131,7 @@
 
             <main class="p-8 space-y-6 max-w-7xl w-full mx-auto flex-1">
                 
-                <!-- ========================================== -->
-                <!-- SEÇÃO 1: DASHBOARD CENTRAL                 -->
-                <!-- ========================================== -->
+                <!-- DASHBOARD CENTRAL -->
                 <div id="aba-dashboard" class="space-y-6 secao-sistema block">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 auto-rows-fr">
                         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md h-28 flex flex-col justify-between">
@@ -205,7 +211,7 @@
                                         <th class="py-2.5 px-4 text-center">Competência</th>
                                         <th class="py-2.5 px-4 text-right">Faturado</th>
                                         <th class="py-2.5 px-4 text-right">Glosa (Auditado)</th>
-                                        <th class="py-3 px-4 text-center">Status</th>
+                                        <th class="py-2.5 px-4 text-center">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dash-movimentacoes" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
@@ -214,9 +220,7 @@
                     </div>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- SEÇÃO 2: QUADRO DE TAREFAS                 -->
-                <!-- ========================================== -->
+                <!-- QUADRO DE TAREFAS -->
                 <div id="aba-tarefas" class="space-y-6 secao-sistema hidden">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
@@ -275,9 +279,9 @@
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">Supervisão / Instância</label>
                                 <select id="add-task-instancia" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
-                                    <option value="1a Instância">1ª Instância (Auditoria Interna)</option>
-                                    <option value="2a Instância">2ª Instância (Coord. Faturamento)</option>
-                                    <option value="3a Instância">3ª Instância (Robson Farias)</option>
+                                    <option value="1ª Instância">1ª Instância (Auditoria Interna)</option>
+                                    <option value="2ª Instância">2ª Instância (Coord. Faturamento)</option>
+                                    <option value="3ª Instância">3ª Instância (Robson Farias)</option>
                                 </select>
                             </div>
                             <div>
@@ -317,12 +321,8 @@
                     </div>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- SEÇÃO 3: LANÇAR FATURAS                    -->
-                <!-- ========================================== -->
+                <!-- LANÇAR FATURAS -->
                 <div id="aba-contas" class="space-y-6 secao-sistema hidden">
-                    
-                    <!-- KPI TOP -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
                         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between h-20">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">A Pagar Geral</p>
@@ -336,16 +336,13 @@
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Pago Líquido</p>
                             <h3 class="text-base font-black text-slate-900" id="anexo-pago">R$ 0,00</h3>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between h-20">
+                        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-xs flex flex-col justify-between h-20">
                             <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Total Recuperado</p>
                             <h3 class="text-base font-black text-emerald-600" id="anexo-recuperado">R$ 0,00</h3>
                         </div>
                     </div>
 
-                    <!-- CENTRAL: FORMULÁRIO + DONUT LADO A LADO -->
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                        
-                        <!-- FORM COMPACTO -->
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs lg:col-span-5">
                             <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
                                 <i class="fa-solid fa-file-invoice-dollar text-blue-600 text-base"></i>
@@ -367,8 +364,8 @@
                                 </div>
 
                                 <div>
-                                    <label class="block font-bold text-slate-500 uppercase mb-0.5">Prestador</label>
-                                    <input type="text" id="form-prestador" placeholder="Nome do prestador" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+                                    <label class="block font-bold text-slate-500 uppercase mb-0.5">Prestador / Unidade</label>
+                                    <input type="text" id="form-prestador" placeholder="Nome da unidade ou prestador" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
@@ -385,15 +382,15 @@
                                 <div class="grid grid-cols-3 gap-2">
                                     <div>
                                         <label class="block font-bold text-slate-500 uppercase mb-0.5">Faturado (R$)</label>
-                                        <input type="number" step="0.01" id="form-faturado" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold">
+                                        <input type="number" step="0.01" id="form-faturado" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold text-emerald-600">
                                     </div>
                                     <div>
                                         <label class="block font-bold text-slate-500 uppercase mb-0.5">Auditado (R$)</label>
-                                        <input type="number" step="0.01" id="form-auditado" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold text-blue-600">
+                                        <input type="number" step="0.01" id="form-auditado" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-200 rounded-lg bg-slate-50/50 font-semibold text-red-600">
                                     </div>
                                     <div>
                                         <label class="block font-bold text-slate-500 uppercase mb-0.5">Repasse (R$)</label>
-                                        <input type="number" step="0.01" id="form-acordo" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-200 text-slate-700 font-semibold" readonly>
+                                        <input type="number" step="0.01" id="form-acordo" placeholder="0.00" required class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-200 text-blue-600 font-semibold" readonly>
                                     </div>
                                 </div>
 
@@ -417,7 +414,6 @@
                             </form>
                         </div>
 
-                        <!-- GRÁFICO DONUT -->
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs lg:col-span-7 h-[410px] flex flex-col justify-between">
                             <div>
                                 <h3 class="text-sm font-black text-slate-800">Distribuição Financeira</h3>
@@ -429,7 +425,6 @@
                         </div>
                     </div>
 
-                    <!-- HISTÓRICO DE LANÇAMENTOS -->
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-6">
                         <div class="p-4 border-b border-slate-100"><h3 class="text-sm font-black text-slate-800">Histórico de Lançamentos</h3></div>
                         <div class="overflow-x-auto w-full">
@@ -437,7 +432,7 @@
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-400 uppercase text-[9px] font-bold border-b border-slate-200">
                                         <th class="py-3 px-4 text-center">Competência</th>
-                                        <th class="py-3 px-4">Prestador</th>
+                                        <th class="py-3 px-4">Unidade / Prestador</th>
                                         <th class="py-3 px-4">Setor / Grupo</th>
                                         <th class="py-3 px-4 text-right">Vl. Faturado</th>
                                         <th class="py-3 px-4 text-right">Vl. Auditado</th>
@@ -454,21 +449,59 @@
                     </div>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- SEÇÃO 4: EXTRATO COMPLETO DE AUDITORIA     -->
-                <!-- ========================================== -->
+                <!-- EXTRATO COMPLETO DE AUDITORIA -->
                 <div id="aba-extrato" class="space-y-6 secao-sistema hidden">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-end gap-4 no-print">
-                        <div class="flex-1 w-full"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Buscar Prestador</label><input type="text" id="filtro-nome" oninput="filtrarExtratoExclusivo()" placeholder="Buscar..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
-                        <button onclick="window.print()" class="bg-slate-900 text-white font-bold py-2 px-5 rounded-xl text-sm hover:bg-slate-800 h-[38px] shadow-xs cursor-pointer"><i class="fa-solid fa-print"></i> Imprimir Relatório</button>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-end gap-3 no-print">
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Buscar Prestador / Unidade</label>
+                            <input type="text" id="filtro-nome" oninput="filtrarExtratoExclusivo()" placeholder="Buscar por nome..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-blue-500">
+                        </div>
+                        <div class="w-full md:w-48">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Filtrar por Status</label>
+                            <select id="filtro-status-extrato" onchange="filtrarExtratoExclusivo()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white font-semibold text-slate-700 focus:outline-blue-500">
+                                <option value="TODOS">Todos os Status</option>
+                                <option value="A Pagar">A Pagar</option>
+                                <option value="Auditada">Auditada</option>
+                                <option value="Paga">Paga</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 w-full md:w-auto">
+                            <button onclick="enviarRelatorioZap()" class="flex-1 md:flex-initial bg-emerald-600 text-white font-bold py-2 px-4 rounded-xl text-sm hover:bg-emerald-700 h-[38px] shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2">
+                                <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Zap
+                            </button>
+                            <button onclick="exportarRelatorioPNG()" class="flex-1 md:flex-initial bg-blue-600 text-white font-bold py-2 px-4 rounded-xl text-sm hover:bg-blue-700 h-[38px] shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-image"></i> Baixar PNG
+                            </button>
+                            <button onclick="window.print()" class="flex-1 md:flex-initial bg-slate-900 text-white font-bold py-2 px-4 rounded-xl text-sm hover:bg-slate-800 h-[38px] shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-print"></i> Imprimir
+                            </button>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+                    <!-- ÁREA DO RELATÓRIO REVISADA: SUBTOTAL COM FUNDO PRETO -->
+                    <div id="area-relatorio-extrato" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="mb-6 pb-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <img src="logo-neocenter.svg" 
+                                     alt="Logo Neocenter" 
+                                     class="h-10 w-auto object-contain shrink-0">
+                                <div class="min-w-0">
+                                    <h3 class="text-xs md:text-sm font-black text-slate-900 tracking-tight uppercase whitespace-nowrap">
+                                        EXTRATO DE REPASSE DE CONTAS SADT - UNIDADE: HOSPITAL FELICIO ROCHO
+                                    </h3>
+                                    <p class="text-xs text-slate-500 whitespace-nowrap">Extrato consolidado por Setor, Grupo e Unidades - Labdiag</p>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="text-xs font-bold text-slate-500 block" id="lbl-filtro-aplicado">Status: Todos</span>
+                            </div>
+                        </div>
                         <div class="overflow-x-auto w-full">
                             <table class="w-full text-left border-collapse text-xs">
                                 <thead>
                                     <tr class="bg-slate-900 text-slate-300 font-bold uppercase text-[10px] border-b border-slate-800">
                                         <th class="py-3 px-4 text-center">Competência</th>
-                                        <th class="py-3 px-4">Prestador</th>
+                                        <th class="py-3 px-4">Unidade / Prestador</th>
                                         <th class="py-3 px-4 text-right">Vl. Cobrado</th>
                                         <th class="py-3 px-4 text-right">Vl. Glosa (Auditado)</th>
                                         <th class="py-3 px-4 text-right">Vl. Repasse</th>
@@ -476,6 +509,298 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tabela-extrato-geral" class="divide-y divide-slate-100 font-medium"></tbody>
+                                <tfoot class="border-t-2 border-slate-900 bg-slate-50 font-bold text-slate-900">
+                                    <tr class="text-xs uppercase">
+                                        <td colspan="2" class="py-3.5 px-4 text-right font-black tracking-wider text-slate-800">TOTAL GERAL DO RELATÓRIO:</td>
+                                        <td class="py-3.5 px-4 text-right font-mono text-emerald-600 font-bold" id="extrato-total-cobrado">R$ 0,00</td>
+                                        <td class="py-3.5 px-4 text-right font-mono text-red-600 font-bold" id="extrato-total-auditado">R$ 0,00</td>
+                                        <td class="py-3.5 px-4 text-right font-mono text-blue-600 font-black text-sm bg-blue-50/80" id="extrato-total-repasse">R$ 0,00</td>
+                                        <td class="py-3.5 px-4 text-center"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO: ANÁLISE DE REPASSE E INTELIGÊNCIA EXECUTIVA -->
+                <div id="aba-repasse" class="space-y-6 secao-sistema hidden">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 no-print">
+                        <div>
+                            <h3 class="text-base font-black text-slate-900">Análise Executiva de Repasse e Glosas</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Importe a planilha DACMED/Auditoria para cruzamento e diagnósticos de inteligência</p>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <input type="file" id="input-repasse-file" accept=".xlsx, .xls, .csv" class="hidden" onchange="processarPlanilhaRepasse(event)">
+                            <button onclick="document.getElementById('input-repasse-file').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm cursor-pointer transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-excel text-sm"></i> Carregar Planilha DACMED
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="barra-status-filtro-ativo" class="hidden bg-blue-900 text-white px-5 py-2.5 rounded-xl flex items-center justify-between shadow-md text-xs">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-blue-300"></i>
+                            <span>Filtro Relacional Ativo: <strong id="lbl-filtro-detalhe" class="text-amber-300">Nenhum</strong></span>
+                        </div>
+                        <button onclick="limparFiltrosDrill()" class="bg-blue-800 hover:bg-blue-700 text-white font-bold px-3 py-1 rounded-lg text-[11px] cursor-pointer transition-all">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Restaurar Visão Geral
+                        </button>
+                    </div>
+
+                    <div class="sticky-kpi-panel bg-slate-50/90 backdrop-blur-md py-2 border-b border-slate-200/80 -mx-2 px-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Receita Lançada</p>
+                                <h3 class="text-base font-black text-emerald-600 mt-0.5" id="rep-kpi-receita">R$ 0,00</h3>
+                            </div>
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Valor Tabela / Acordo</p>
+                                <h3 class="text-base font-black text-blue-600 mt-0.5" id="rep-kpi-tabela">R$ 0,00</h3>
+                            </div>
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Glosa (Auditado)</p>
+                                <h3 class="text-base font-black text-red-600 mt-0.5" id="rep-kpi-auditado">R$ 0,00</h3>
+                            </div>
+                            <div onclick="filtrarPorGrupoTop()" class="bg-white p-3.5 rounded-xl border border-red-200 shadow-xs bg-red-50/20 cursor-pointer hover:bg-red-100/50 transition-all group" title="Clique para detalhar este grupo">
+                                <p class="text-[9px] font-bold text-red-600 uppercase tracking-wider flex items-center justify-between">
+                                    Grupo Mais Auditado <i class="fa-solid fa-arrow-pointer opacity-0 group-hover:opacity-100 text-xs text-red-500"></i>
+                                </p>
+                                <h3 class="text-xs font-black text-red-700 mt-0.5 truncate" id="rep-kpi-grupo-top">-</h3>
+                            </div>
+                            <div class="bg-white p-3.5 rounded-xl border border-amber-200 shadow-xs bg-amber-50/20">
+                                <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider">Laudos Pendentes / N.I.</p>
+                                <h3 class="text-base font-black text-amber-800 mt-0.5" id="rep-kpi-laudos-pendentes">0 itens</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center relative min-h-[190px]">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center w-full">Média de Glosa (%)</h4>
+                            <div class="w-full max-w-[190px] h-28 relative">
+                                <canvas id="gaugeRepasseGlosa"></canvas>
+                                <div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center">
+                                    <span class="text-xl font-black text-slate-900" id="txt-gauge-repasse-glosa">0.0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center relative min-h-[190px]">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center w-full">Ticket Médio / Conta</h4>
+                            <div class="w-full max-w-[190px] h-28 relative">
+                                <canvas id="gaugeRepasseTicket"></canvas>
+                                <div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center">
+                                    <span class="text-base font-black text-slate-900" id="txt-gauge-repasse-ticket">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center relative min-h-[190px]">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center w-full">Contas Processadas</h4>
+                            <div class="w-full max-w-[190px] h-28 relative">
+                                <canvas id="gaugeRepasseContas"></canvas>
+                                <div class="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center">
+                                    <span class="text-xl font-black text-slate-900" id="txt-gauge-repasse-contas">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 min-h-[260px]">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-chart-bar text-red-500 mr-1.5"></i> Total Glosado/Auditado por Grupo</h4>
+                                <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-hand-pointer mr-1"></i>Clique na barra para detalhar</span>
+                            </div>
+                            <div class="h-52 w-full relative">
+                                <canvas id="chartRepasseGrupo" class="cursor-pointer"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm min-h-[260px] flex flex-col justify-between">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-chart-pie text-emerald-500 mr-1.5"></i> Proporção Receita x Glosa</h4>
+                            <div class="h-52 w-full relative flex items-center justify-center">
+                                <canvas id="chartRepasseProporcao"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-building-ngo text-blue-600 mr-1.5"></i> Participação por Convênio (% Market Share)</h4>
+                            <div class="overflow-x-auto w-full max-h-56">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[9px]">
+                                            <th class="py-2 px-3">Convênio</th>
+                                            <th class="py-2 px-3 text-center">Atendimentos</th>
+                                            <th class="py-2 px-3 text-right">Valor Cobrado</th>
+                                            <th class="py-2 px-3 text-right">Glosa Total</th>
+                                            <th class="py-2 px-3 text-center">% Receita</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-convenios-share" class="divide-y divide-slate-100 font-medium">
+                                        <tr><td colspan="5" class="py-4 text-center text-slate-400">Aguardando dados da planilha.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-file-waveform text-purple-600 mr-1.5"></i> Status de Laudos & Identificação</h4>
+                            <div class="h-44 w-full relative"><canvas id="chartLaudosStatus"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-hospital-user text-emerald-600 mr-1.5"></i> Top Pacientes em Valor Cobrado</h4>
+                            <div class="overflow-x-auto w-full max-h-64">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[9px]">
+                                            <th class="py-2 px-3">Paciente</th>
+                                            <th class="py-2 px-3 text-right">Valor Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rank-pacientes" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-handshake-angle text-blue-600 mr-1.5"></i> Top Convênios em Receita</h4>
+                            <div class="overflow-x-auto w-full max-h-64">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[9px]">
+                                            <th class="py-2 px-3">Convênio</th>
+                                            <th class="py-2 px-3 text-right">Valor Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rank-convenios" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-sitemap text-amber-600 mr-1.5"></i> Top Setores em Faturamento</h4>
+                            <div class="overflow-x-auto w-full max-h-64">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[9px]">
+                                            <th class="py-2 px-3">Setor</th>
+                                            <th class="py-2 px-3 text-right">Valor Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rank-setores" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-boxes-packing text-blue-600 mr-1.5"></i> Produtos/Procedimentos Mais Cobrados</h4>
+                            <div class="overflow-x-auto w-full max-h-64">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[9px]">
+                                            <th class="py-2 px-3">Item</th>
+                                            <th class="py-2 px-3 text-center">Qtde Total</th>
+                                            <th class="py-2 px-3 text-right">Saldo Cobrado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-produtos-cobrados" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-triangle-exclamation text-red-600 mr-1.5"></i> Produtos/Procedimentos Glosados</h4>
+                            <div class="overflow-x-auto w-full max-h-64">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase text-[9px]">
+                                            <th class="py-2 px-3">Item Glosado</th>
+                                            <th class="py-2 px-3 text-center">Qtde Glosada</th>
+                                            <th class="py-2 px-3 text-right">Glosa Acumulada</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-produtos-glosados" class="divide-y divide-slate-100 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="secao-ancora-detalhamento" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider">
+                                    <i class="fa-solid fa-user-doctor text-blue-600 mr-1.5"></i> Auditoria Detalhada por Paciente e Grupo
+                                </h3>
+                                <p class="text-xs text-slate-400">Estrutura relacional direta de lançamentos e produtos</p>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                                <div class="w-full md:w-64">
+                                    <input type="text" id="filtro-repasse-paciente" oninput="executarFiltroCruzadoGlobal()" placeholder="Digite o nome do paciente..." class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-blue-500">
+                                </div>
+                                <div class="w-full md:w-48">
+                                    <select id="filtro-repasse-setor" onchange="executarFiltroCruzadoGlobal()" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-blue-500">
+                                        <option value="TODOS">Todos os Setores</option>
+                                    </select>
+                                </div>
+                                <div class="w-full md:w-48">
+                                    <select id="filtro-repasse-grupo" onchange="executarFiltroCruzadoGlobal()" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-blue-500">
+                                        <option value="TODOS">Todos os Grupos</option>
+                                    </select>
+                                </div>
+                                <button onclick="limparFiltrosDrill()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold transition-all"><i class="fa-solid fa-filter-circle-xmark mr-1"></i>Limpar Filtros</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto w-full max-h-96">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-900 text-slate-200 font-bold uppercase text-[10px] sticky top-0">
+                                        <th class="py-3 px-4">Paciente / Atendimento</th>
+                                        <th class="py-3 px-4">Setor</th>
+                                        <th class="py-3 px-4">Grupo Faturamento</th>
+                                        <th class="py-3 px-4">Item / Procedimento</th>
+                                        <th class="py-3 px-4 text-right">Receita Lançamento (R$)</th>
+                                        <th class="py-3 px-4 text-right">Tabela (R$)</th>
+                                        <th class="py-3 px-4 text-right">Glosa / Auditado (R$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-paciente-setor-grupo" class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    <tr><td colspan="7" class="py-6 text-center text-slate-400">Carregue uma planilha para visualizar a análise por paciente.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="text-sm font-black text-slate-800">Detalhamento Geral dos Itens por Grupo e Saldos</h3>
+                            <span class="text-xs text-slate-400 font-mono" id="rep-total-registros">0 registros</span>
+                        </div>
+                        <div class="overflow-x-auto w-full max-h-96">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-900 text-slate-200 font-bold uppercase text-[10px] sticky top-0">
+                                        <th class="py-3 px-4">Grupo Faturamento</th>
+                                        <th class="py-3 px-4">Descrição do Item / Produto</th>
+                                        <th class="py-3 px-4 text-center">Qtde Mov.</th>
+                                        <th class="py-3 px-4 text-right">Receita Lançamento</th>
+                                        <th class="py-3 px-4 text-right">Valor Tabela</th>
+                                        <th class="py-3 px-4 text-right">Vlr. Auditado</th>
+                                        <th class="py-3 px-4 text-center">Status Auditoria</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-repasse-dados" class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    <tr><td colspan="7" class="py-6 text-center text-slate-400">Nenhuma planilha de repasse/auditoria carregada.</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -484,29 +809,28 @@
         </div>
     </template>
 
-    <!-- ========================================== -->
-    <!-- SCRIPTS E INTELIGÊNCIA LOGICIAL DE FLUXOS  -->
-    <!-- ========================================== -->
     <script>
         let gaugeChartGlosa = null, gaugeChartPago = null;
         let chartEvolucao = null, chartDonutStatusGeral = null, chartDonutStatus = null;
         let gaugeTaskProgress = null, chartTaskProdutividade = null, chartTaskInstancia = null;
+        
+        let gaugeRepasseGlosaInst = null, gaugeRepasseTicketInst = null, gaugeRepasseContasInst = null;
+        let chartRepasseGrupoInst = null, chartRepasseProporcaoInst = null, chartLaudosStatusInst = null;
+        
         let todasContasLocais = [];
+        let dadosRepasseFormatados = [];
+        let nomeGrupoMaisAuditadoTop = "";
 
-        // Inicialização de cache local do motor Monday de tarefas
         let painelTarefas = JSON.parse(localStorage.getItem('monday_standalone_tasks')) || [
-            { id: "tk_1", nome: "Auditoria Confirmação de Diárias", responsavel: "Ana Silva", instancia: "1a Instância", setor: "Auditoria", data: "2026-07-15", prioridade: "Alta", status: "working" },
-            { id: "tk_2", nome: "Ajuste Cadastral de Tabelas TUSS", responsavel: "Carlos Lima", instancia: "2a Instância", setor: "Faturamento", data: "2026-07-20", prioridade: "Média", status: "stuck" },
-            { id: "tk_3", nome: "Revisão Executiva de Glosas Críticas", responsavel: "Robson Farias", instancia: "3a Instância", setor: "Administração", data: "2026-07-05", prioridade: "Alta", status: "working" }
+            { id: "tk_1", nome: "Auditoria Confirmação de Diárias", responsavel: "Ana Silva", instancia: "1ª Instância", setor: "Auditoria", data: "2026-07-15", prioridade: "Alta", status: "working" },
+            { id: "tk_2", nome: "Ajuste Cadastral de Tabelas TUSS", responsavel: "Carlos Lima", instancia: "2ª Instância", setor: "Faturamento", data: "2026-07-20", prioridade: "Média", status: "stuck" },
+            { id: "tk_3", nome: "Revisão Executiva de Glosas Críticas", responsavel: "Robson Farias", instancia: "3ª Instância", setor: "Administração", data: "2026-07-05", prioridade: "Alta", status: "working" }
         ];
 
         if (!localStorage.getItem('db.json')) {
             localStorage.setItem('db.json', JSON.stringify({ ultimas_contas: [] }));
         }
 
-        // ==========================================
-        // MOTOR DE AUTENTICAÇÃO (SISTEMA DE LOGIN)
-        // ==========================================
         document.getElementById('form-login').addEventListener('submit', function(e) {
             e.preventDefault();
             const usuario = document.getElementById('login-user').value;
@@ -558,8 +882,7 @@
             const elAba = document.getElementById(idAba);
             if(elAba) elAba.classList.remove('hidden');
             
-            // Gerenciamento visual dos botões do menu lateral
-            ['btn-aba-dashboard', 'btn-aba-tarefas', 'btn-aba-contas', 'btn-aba-extrato'].forEach(btn => {
+            ['btn-aba-dashboard', 'btn-aba-tarefas', 'btn-aba-contas', 'btn-aba-extrato', 'btn-aba-repasse'].forEach(btn => {
                 const el = document.getElementById(btn);
                 if(el) {
                     el.className = btn === `btn-${idAba}` 
@@ -570,41 +893,28 @@
             carregarDadosCompletos();
         };
 
-        // ==========================================
-        // MOTOR 1: ENGENHARIA E CONCILIAÇÃO DE DADOS 
-        // ==========================================
         function carregarDadosCompletos() {
             const db = JSON.parse(localStorage.getItem('db.json'));
             todasContasLocais = db.ultimas_contas || [];
             
-            let totalFaturado = 0;   
-            let totalGlosaRetido = 0;  
-            let totalAcordadoPagar = 0;        
-            let totalAtraso = 0;
-            let qtdComAtraso = 0;
-            let totalValorPagoLiquido = 0;
-            let totalRecuperadoAuditoria = 0;
-            let totalPerdaMatMed = 0; 
-            
+            let totalFaturado = 0, totalGlosaRetido = 0, totalAcordadoPagar = 0;
+            let totalAtraso = 0, qtdComAtraso = 0, totalValorPagoLiquido = 0;
+            let totalRecuperadoAuditoria = 0, totalPerdaMatMed = 0;
             let contagemStatus = { "A Pagar": 0, "Auditada": 0, "Paga": 0 };
 
             todasContasLocais.forEach(c => {
-                const fat = parseFloat(c.valor_faturado) || 0;
-                let aud = parseFloat(c.valor_auditado) || 0;
+                const fat = Math.round((parseFloat(c.valor_faturado) || 0) * 100) / 100;
+                let aud = Math.round((parseFloat(c.valor_auditado) || 0) * 100) / 100;
+                let acordo = Math.round((fat - aud) * 100) / 100;
                 
-                // Normalização estrutural retrocompatível
-                let acordo = fat - aud;
-                if (c.valor_acordo !== undefined) acordo = parseFloat(c.valor_acordo);
-                else if (c.valor_repasse !== undefined) acordo = parseFloat(c.valor_repasse);
+                if (c.valor_acordo !== undefined) acordo = Math.round((parseFloat(c.valor_acordo) || 0) * 100) / 100;
+                else if (c.valor_repasse !== undefined) acordo = Math.round((parseFloat(c.valor_repasse) || 0) * 100) / 100;
 
-                const CCusto = (c.setor || c.grupo || 'GERAL').toUpperCase().trim();
-                const matmedTotal = parseFloat(c.valor_matmed_total) || 0;
+                const matmedTotal = Math.round((parseFloat(c.valor_matmed_total) || 0) * 100) / 100;
                 
                 totalFaturado += fat;
                 totalAcordadoPagar += acordo;
                 totalGlosaRetido += aud; 
-                
-                // NOVO CÁLCULO: VALOR COBRADO (FATURADO) - VALOR ACORDO (REPASSE)
                 totalRecuperadoAuditoria += (fat - acordo);
                 totalPerdaMatMed += matmedTotal;
 
@@ -623,7 +933,6 @@
             const ticketMedio = todasContasLocais.length > 0 ? (totalFaturado / todasContasLocais.length) : 0;
             const percentualPago = totalAcordadoPagar > 0 ? ((totalValorPagoLiquido / totalAcordadoPagar) * 100) : 0;
 
-            // Injeta dados nas duas estruturas de KPIs de forma segura
             const mapeamentoValores = {
                 'dash-apagar': totalAcordadoPagar, 'anexo-apagar': totalAcordadoPagar,
                 'dash-auditado': totalGlosaRetido, 'anexo-auditado': totalGlosaRetido,
@@ -634,18 +943,17 @@
 
             for(let [id, val] of Object.entries(mapeamentoValores)){
                 let el = document.getElementById(id);
-                if(el) el.innerText = 'R$ ' + val.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                if(el) el.innerText = 'R$ ' + val.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             }
 
             if(document.getElementById('card-idx-glosa')) document.getElementById('card-idx-glosa').innerText = idxGlosaGeral.toFixed(1) + '%';
             if(document.getElementById('card-atraso')) document.getElementById('card-atraso').innerText = mediaAtraso + ' dias';
-            if(document.getElementById('card-ticket')) document.getElementById('card-ticket').innerText = 'R$ ' + ticketMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            if(document.getElementById('card-ticket')) document.getElementById('card-ticket').innerText = 'R$ ' + ticketMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             if(document.getElementById('card-abertas')) document.getElementById('card-abertas').innerText = contagemStatus['A Pagar'] + ' faturas';
 
-            // Ticker Letreiro Digital
             let stringTicker = "";
             todasContasLocais.slice(0, 5).forEach(c => {
-                stringTicker += `<span class="inline-flex items-center space-x-2"><span class="text-slate-300 font-bold uppercase">${c.prestador}:</span><span class="text-emerald-400 font-medium neon-text-green">▲ COBRADO R$ ${c.valor_faturado.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></span> &nbsp;&nbsp;&nbsp;&nbsp;`;
+                stringTicker += `<span class="inline-flex items-center space-x-2"><span class="text-slate-300 font-bold uppercase">${c.prestador}:</span><span class="text-emerald-400 font-medium neon-text-green">▲ COBRADO R$ ${parseFloat(c.valor_faturado || 0).toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></span> &nbsp;&nbsp;&nbsp;&nbsp;`;
             });
             if(document.getElementById('letreiro-bolsa')) document.getElementById('letreiro-bolsa').innerHTML = stringTicker || "<span>Painel sincronizado.</span>";
 
@@ -668,28 +976,29 @@
         function renderizarGauges(glosa, pago) {
             if(!window.Chart || !document.getElementById('gaugeGlosa')) return;
             const opt = { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, plugins: { legend: { display: false } }, cutout: '80%' };
+            
             if (gaugeChartGlosa) gaugeChartGlosa.destroy();
             gaugeChartGlosa = new Chart(document.getElementById('gaugeGlosa').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [glosa, Math.max(0, 100 - glosa)], backgroundColor: ['#3b82f6', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
+            if(document.getElementById('txt-gauge-glosa')) document.getElementById('txt-gauge-glosa').innerText = glosa.toFixed(1) + '%';
+
             if (gaugeChartPago) gaugeChartPago.destroy();
             gaugeChartPago = new Chart(document.getElementById('gaugePago').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [pago, Math.max(0, 100 - pago)], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0 }] }, options: opt });
+            if(document.getElementById('txt-gauge-pago')) document.getElementById('txt-gauge-pago').innerText = pago.toFixed(1) + '%';
         }
 
         function renderizarGraficosCompletos(stData, apagar, auditado, pago) {
             if(!window.Chart) return;
-            // Gráfico de Linha da Home
             if(document.getElementById('graficoEvolucao')){
                 if (chartEvolucao) chartEvolucao.destroy();
                 chartEvolucao = new Chart(document.getElementById('graficoEvolucao').getContext('2d'), { type: 'line', data: { labels: ['Histórico Inicial', 'Competência Corrente'], datasets: [{ label: 'Cobrado', data: [124003, apagar + auditado], borderColor: '#cbd5e1', fill: false }, { label: 'Liberado', data: [112842, apagar], borderColor: '#2563eb', fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
             }
-            // Donut Geral da Home
             if(document.getElementById('graficoDonutStatusGeral')){
                 if (chartDonutStatusGeral) chartDonutStatusGeral.destroy();
-                chartDonutStatusGeral = new Chart(document.getElementById('graficoDonutStatusGeral').getContext('2d'), { type: 'doughnut', data: { labels: ['A Pagar', 'Auditado', 'Pago'], datasets: [{ data: [stData["A Pagar"], stData["Auditada"], stData["Paga"]], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%' } });
+                chartDonutStatusGeral = new Chart(document.getElementById('graficoDonutStatusGeral').getContext('2d'), { type: 'doughnut', data: { labels: ['A Pagar', 'Auditada', 'Paga'], datasets: [{ data: [stData["A Pagar"], stData["Auditada"], stData["Paga"]], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%' } });
             }
-            // Donut Exclusivo da Aba Lançar Faturas (Lado a lado com formulário)
             if(document.getElementById('graficoDonutStatus')){
                 if (chartDonutStatus) chartDonutStatus.destroy();
-                chartDonutStatus = new Chart(document.getElementById('graficoDonutStatus').getContext('2d'), { type: 'doughnut', data: { labels: ['A Pagar', 'Auditado', 'Pago'], datasets: [{ data: [apagar, auditado, pago], backgroundColor: ['#fdab3d', '#3b82f6', '#00c875'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' } });
+                chartDonutStatus = new Chart(document.getElementById('graficoDonutStatus').getContext('2d'), { type: 'doughnut', data: { labels: ['A Pagar', 'Auditada', 'Paga'], datasets: [{ data: [apagar, auditado, pago], backgroundColor: ['#fdab3d', '#3b82f6', '#00c875'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' } });
             }
         }
 
@@ -700,51 +1009,751 @@
 
             if(todasContasLocais.length === 0){
                 corpo.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-400">Nenhum registro encontrado no sistema.</td></tr>`;
-                if(corpoDash) corpoDash.innerHTML = `<tr><td colspan="5" class="py-4 text-center">Nenhum registro.</td></tr>`;
+                if(corpoDash) corpoDash.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Nenhum registro encontrado.</td></tr>`;
                 return;
             }
 
-            let htmlString = "";
-            let htmlDash = "";
+            let htmlString = "", htmlDash = "";
             todasContasLocais.forEach(c => {
-                const fat = parseFloat(c.valor_faturado) || 0;
-                const aud = parseFloat(c.valor_auditado) || 0;
-                const aco = fat - aud;
-                const mat = parseFloat(c.valor_matmed_total) || 0;
+                const fat = Math.round((parseFloat(c.valor_faturado) || 0) * 100) / 100;
+                const aud = Math.round((parseFloat(c.valor_auditado) || 0) * 100) / 100;
+                const aco = Math.round((fat - aud) * 100) / 100;
+                const mat = Math.round((parseFloat(c.valor_matmed_total) || 0) * 100) / 100;
 
                 htmlString += `<tr class="hover:bg-slate-50 border-b border-slate-100 text-[11px]">
                     <td class="py-3 px-4 text-center font-mono">${c.competencia}</td>
                     <td class="py-3 px-4 font-bold text-slate-900">${c.prestador}</td>
                     <td class="py-3 px-4 text-slate-500">${c.setor || 'GERAL'} / ${c.grupo || 'GERAL'}</td>
-                    <td class="py-3 px-4 text-right font-mono">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3 px-4 text-right font-mono text-blue-600">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3 px-4 text-right font-mono text-slate-900">R$ ${aco.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-                    <td class="py-3 px-4 text-right font-mono text-purple-600">R$ ${mat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-emerald-600 font-bold">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-red-600 font-bold">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-blue-600 font-bold">R$ ${aco.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-3 px-4 text-right font-mono text-purple-600">R$ ${mat.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                     <td class="py-3 px-4 text-center">${c.atraso ? c.atraso + ' dias' : '-'}</td>
                     <td class="py-3 px-4 text-center"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px]">${c.status}</span></td>
                     <td class="py-3 px-4 text-center no-print space-x-2">
-                        <button onclick="prepararEdicao('${c.timestamp}')" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deletarFaturaDirect('${c.timestamp}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-square-xmark"></i></button>
+                        <button onclick="prepararEdicao('${c.timestamp}')" class="text-blue-600 hover:text-blue-800 cursor-pointer"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deletarFaturaDirect('${c.timestamp}')" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-square-xmark"></i></button>
                     </td>
                 </tr>`;
 
-                htmlDash += `<tr class="border-b border-slate-100"><td class="py-2 px-4 font-bold">${c.prestador}</td><td class="py-2 px-4 text-center font-mono">${c.competencia}</td><td class="py-2 px-4 text-right font-mono">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-2 px-4 text-right font-mono text-red-500">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-2 px-4 text-center"><span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded">${c.status}</span></td></tr>`;
+                htmlDash += `<tr class="border-b border-slate-100"><td class="py-2 px-4 font-bold">${c.prestador}</td><td class="py-2 px-4 text-center font-mono">${c.competencia}</td><td class="py-2 px-4 text-right font-mono text-emerald-600 font-bold">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td class="py-2 px-4 text-right font-mono text-red-600 font-bold">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td class="py-2 px-4 text-center"><span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded">${c.status}</span></td></tr>`;
             });
             corpo.innerHTML = htmlString;
             if(corpoDash) corpoDash.innerHTML = htmlDash;
         }
 
+        // FUNÇÃO DE FILTRO COM AGRUPAMENTO POR SETOR/GRUPO, SUBTOTAL PRETO E CORES CORRIGIDAS
         function filtrarExtratoExclusivo() {
             const fNome = document.getElementById('filtro-nome')?.value.toLowerCase() || '';
+            const fStatus = document.getElementById('filtro-status-extrato')?.value || 'TODOS';
             const corpo = document.getElementById('tabela-extrato-geral');
+            const lblFiltro = document.getElementById('lbl-filtro-aplicado');
             if(!corpo) return;
 
-            const filtradas = todasContasLocais.filter(c => c.prestador.toLowerCase().includes(fNome));
-            corpo.innerHTML = filtradas.map(c => {
-                const fat = parseFloat(c.valor_faturado) || 0;
-                const aud = parseFloat(c.valor_auditado) || 0;
-                return `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-3 px-4 text-center font-mono">${c.competencia}</td><td class="py-3 px-4 font-bold">${c.prestador}</td><td class="py-3 px-4 text-right font-mono">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-3 px-4 text-right font-mono text-blue-600">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-3 px-4 text-right font-mono">R$ ${(fat - aud).toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-amber-50 font-bold rounded text-[10px]">${c.status}</span></td></tr>`;
-            }).join('');
+            if(lblFiltro) lblFiltro.innerText = `Status: ${fStatus}`;
+
+            const filtradas = todasContasLocais.filter(c => {
+                const bateNome = c.prestador.toLowerCase().includes(fNome);
+                const bateStatus = (fStatus === 'TODOS') || (c.status === fStatus);
+                return bateNome && bateStatus;
+            });
+
+            if(filtradas.length === 0) {
+                corpo.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 font-medium">Nenhum registro encontrado para os filtros selecionados.</td></tr>`;
+                if(document.getElementById('extrato-total-cobrado')) document.getElementById('extrato-total-cobrado').innerText = 'R$ 0,00';
+                if(document.getElementById('extrato-total-auditado')) document.getElementById('extrato-total-auditado').innerText = 'R$ 0,00';
+                if(document.getElementById('extrato-total-repasse')) document.getElementById('extrato-total-repasse').innerText = 'R$ 0,00';
+                return;
+            }
+
+            const agrupado = {};
+            let totGeralCobrado = 0;
+            let totGeralAuditado = 0;
+            let totGeralRepasse = 0;
+
+            filtradas.forEach(c => {
+                const chaveAgrupamento = `${c.setor || 'GERAL'} / ${c.grupo || 'GERAL'}`;
+                if(!agrupado[chaveAgrupamento]) {
+                    agrupado[chaveAgrupamento] = [];
+                }
+                agrupado[chaveAgrupamento].push(c);
+            });
+
+            let htmlFinal = "";
+
+            Object.entries(agrupado).forEach(([grupoNome, itens]) => {
+                let subCobrado = 0;
+                let subAuditado = 0;
+                let subRepasse = 0;
+
+                htmlFinal += `<tr class="bg-slate-100/90 font-black text-slate-800 text-[11px] uppercase border-y border-slate-300">
+                    <td colspan="6" class="py-2 px-4"><i class="fa-solid fa-layer-group text-blue-600 mr-1.5"></i> SETOR / GRUPO: ${grupoNome}</td>
+                </tr>`;
+
+                itens.forEach(c => {
+                    const fat = Math.round((parseFloat(c.valor_faturado) || 0) * 100) / 100;
+                    const aud = Math.round((parseFloat(c.valor_auditado) || 0) * 100) / 100;
+                    const rep = Math.round((fat - aud) * 100) / 100;
+
+                    subCobrado += fat;
+                    subAuditado += aud;
+                    subRepasse += rep;
+
+                    totGeralCobrado += fat;
+                    totGeralAuditado += aud;
+                    totGeralRepasse += rep;
+
+                    htmlFinal += `<tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="py-2.5 px-4 text-center font-mono">${c.competencia}</td>
+                        <td class="py-2.5 px-4 font-bold text-slate-900 pl-6">${c.prestador}</td>
+                        <td class="py-2.5 px-4 text-right font-mono font-bold text-emerald-600">R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td class="py-2.5 px-4 text-right font-mono font-bold text-red-600">R$ ${aud.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td class="py-2.5 px-4 text-right font-mono font-bold text-blue-600">R$ ${rep.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 bg-amber-50 text-amber-800 font-bold rounded text-[10px]">${c.status}</span></td>
+                    </tr>`;
+                });
+
+                // LINHA DE SUBTOTAL COM FUNDO PRETO
+                htmlFinal += `<tr class="bg-black text-white font-bold text-xs border-b-2 border-slate-900">
+                    <td colspan="2" class="py-2.5 px-4 text-right text-[10px] uppercase font-black text-slate-300">Subtotal (${grupoNome}):</td>
+                    <td class="py-2.5 px-4 text-right font-mono text-emerald-400 font-bold">R$ ${subCobrado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-2.5 px-4 text-right font-mono text-red-400 font-bold">R$ ${subAuditado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-2.5 px-4 text-right font-mono text-blue-400 font-black">R$ ${subRepasse.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-2.5 px-4"></td>
+                </tr>`;
+            });
+
+            corpo.innerHTML = htmlFinal;
+
+            // Totais Gerais Recalculados
+            if(document.getElementById('extrato-total-cobrado')) document.getElementById('extrato-total-cobrado').innerText = 'R$ ' + totGeralCobrado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+            if(document.getElementById('extrato-total-auditado')) document.getElementById('extrato-total-auditado').innerText = 'R$ ' + totGeralAuditado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+            if(document.getElementById('extrato-total-repasse')) document.getElementById('extrato-total-repasse').innerText = 'R$ ' + totGeralRepasse.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        }
+
+        function exportarRelatorioPNG() {
+            const areaRelatorio = document.getElementById('area-relatorio-extrato');
+            if (!areaRelatorio || !window.html2canvas) {
+                alert("Erro ao carregar módulo de captura de imagem.");
+                return;
+            }
+
+            html2canvas(areaRelatorio, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Relatorio_Labdiag_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function enviarRelatorioZap() {
+            const fNome = document.getElementById('filtro-nome')?.value.toLowerCase() || '';
+            const fStatus = document.getElementById('filtro-status-extrato')?.value || 'TODOS';
+
+            const filtradas = todasContasLocais.filter(c => {
+                const bateNome = c.prestador.toLowerCase().includes(fNome);
+                const bateStatus = (fStatus === 'TODOS') || (c.status === fStatus);
+                return bateNome && bateStatus;
+            });
+
+            if (filtradas.length === 0) {
+                alert("Nenhum dado disponível para envio.");
+                return;
+            }
+
+            let totCobrado = 0, totGlosa = 0, totRepasse = 0;
+            filtradas.forEach(c => {
+                const fat = Math.round((parseFloat(c.valor_faturado) || 0) * 100) / 100;
+                const aud = Math.round((parseFloat(c.valor_auditado) || 0) * 100) / 100;
+                totCobrado += fat;
+                totGlosa += aud;
+                totRepasse += (fat - aud);
+            });
+
+            let texto = `*📊 EXTRATO DE REPASSE DE CONTAS SADT - UNIDADE: HOSPITAL FELICIO ROCHO*\n`;
+            texto += `*Filtro Status:* ${fStatus}\n`;
+            texto += `*Total Itens:* ${filtradas.length}\n`;
+            texto += `-----------------------------------\n`;
+            texto += `*Cobrado:* R$ ${totCobrado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}\n`;
+            texto += `*Glosa:* R$ ${totGlosa.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}\n`;
+            texto += `*Repasse Líquido:* R$ ${totRepasse.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}\n`;
+            texto += `-----------------------------------\n\n`;
+
+            texto += `*Destaques:*\n`;
+            filtradas.slice(0, 10).forEach(c => {
+                const fat = Math.round((parseFloat(c.valor_faturado) || 0) * 100) / 100;
+                const aud = Math.round((parseFloat(c.valor_auditado) || 0) * 100) / 100;
+                texto += `• *${c.prestador}* (${c.setor || 'GERAL'}): Repasse R$ ${(fat - aud).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})} [${c.status}]\n`;
+            });
+
+            if (filtradas.length > 10) {
+                texto += `\n_... e mais ${filtradas.length - 10} registros._`;
+            }
+
+            const urlZap = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(urlZap, '_blank');
+        }
+
+        // --- LÓGICA DA ABA DE REPASSE E INTELIGÊNCIA ---
+        function processarPlanilhaRepasse(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+
+                analisarDadosRepasse(rawJson);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function analisarDadosRepasse(rows) {
+            if (!rows || rows.length === 0) {
+                alert("O arquivo importado não contém registros.");
+                return;
+            }
+
+            const parseMoeda = (val) => {
+                if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                if (!val) return 0;
+                let str = String(val).trim().replace(/R\$/g, '').replace(/\s/g, '');
+                if (str.includes(',')) {
+                    str = str.replace(/\./g, '').replace(',', '.');
+                }
+                return parseFloat(str) || 0;
+            };
+
+            dadosRepasseFormatados = rows.map((r, i) => {
+                const obterValorColuna = (nomesPossiveis) => {
+                    const chaves = Object.keys(r);
+                    for (let nome of nomesPossiveis) {
+                        const chaveEncontrada = chaves.find(k => 
+                            k.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 
+                            nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        );
+                        if (chaveEncontrada && r[chaveEncontrada] !== undefined && r[chaveEncontrada] !== null && r[chaveEncontrada] !== "") {
+                            return String(r[chaveEncontrada]).trim();
+                        }
+                    }
+                    return null;
+                };
+
+                const competencia = obterValorColuna(['CompetênC15+A', 'Competencia', 'COMPETENCIA', 'MES_ANO', 'DT_COMPETENCIA']) || '-';
+                const atendimento = obterValorColuna(['Atendiment', 'Atendimento', 'Conta', 'CD_ATENDIMENTO', 'ATENDIMENTO', 'NR_ATENDIMENTO']) || `${i+1}`;
+                const paciente = obterValorColuna(['Paciente', 'PACIENTE', 'NM_PACIENTE', 'NOME PACIENTE', 'NOME_PACIENTE', 'NOME DO PACIENTE']) || 'PACIENTE NÃO INFORMADO';
+                const convenio = obterValorColuna(['Convênio', 'Convenio', 'CONVENIO', 'Plano', 'NM_CONVENIO', 'DS_CONVENIO']) || 'CONVÊNIO NÃO INFORMADO';
+                const codFat = obterValorColuna(['Cód. Fat', 'COD_FAT', 'Cod Fat', 'Código', 'CD_PROCEDIMENTO', 'COD_PROCEDIMENTO']) || '-';
+                const descricao = obterValorColuna(['Descrição Fat.', 'Procedimento', 'Item', 'Descricao Fat', 'DS_PROCEDIMENTO', 'DESCRICAO']) || `Item ${i+1}`;
+                const qtd = parseMoeda(obterValorColuna(['Qtde. Mov', 'Qtd', 'Quantidade', 'QT_LANCAMENTO', 'QTDE']) || 1);
+                
+                const receitaLancamento = parseMoeda(obterValorColuna([
+                    'Receita Lançamento', 'Receita Lancamento', 'RECEITA LANÇAMENTO', 
+                    'Receita_Lancamento', 'Valor Lançado', 'Valor Cobrado', 'VL_LANÇAMENTO', 'VL_LANCTO'
+                ]));
+                
+                const valorTabela = parseMoeda(obterValorColuna([
+                    'VLR_TAB1,5', 'VLR_TAB1.5', 'Valor Tabela', 'Vlr Tabela', 'VL_TABELA', 'VALOR_TABELA'
+                ]));
+                
+                let vlrDif = parseMoeda(obterValorColuna([
+                    'VLR_DIF:', 'VLR_DIF', 'Diferença', 'Diferenca', 'VL_GLOSA', 'VL_DIFERENCA'
+                ]));
+
+                if (vlrDif === 0 && receitaLancamento > 0 && valorTabela > 0 && receitaLancamento !== valorTabela) {
+                    vlrDif = receitaLancamento - valorTabela;
+                }
+
+                const grupo = obterValorColuna(['Grupo Faturamento', 'GRUPO_FATURAMENTO', 'Grupo', 'DS_GRUPO', 'GRUPO']) || 'DIVERSOS';
+                const setor = obterValorColuna(['Setor', 'SETOR', 'DS_SETOR', 'UNIDADE']) || 'GERAL';
+                const laudoStatus = obterValorColuna(['Laudo', 'DS_LAUDO', 'Status Laudo', 'Laudo Identificado', 'ST_LAUDO']) || 'NÃO IDENTIFICADO';
+                const dsAuditoria = obterValorColuna(['DS_AUDITORIA', 'Status Auditoria', 'ST_AUDITORIA']) || (vlrDif > 0 ? 'VLR_AUDITADO' : 'SEM_GLOSA');
+
+                return {
+                    competencia,
+                    atendimento,
+                    paciente,
+                    convenio,
+                    codFat,
+                    descricao,
+                    qtd,
+                    receitaLancamento,
+                    valorTabela,
+                    vlrDif: Math.abs(vlrDif),
+                    grupo,
+                    setor,
+                    laudoStatus,
+                    dsAuditoria
+                };
+            });
+
+            popularFiltrosPaciente(dadosRepasseFormatados);
+            executarFiltroCruzadoGlobal();
+        }
+
+        function executarFiltroCruzadoGlobal() {
+            if (!dadosRepasseFormatados || dadosRepasseFormatados.length === 0) return;
+
+            const nomePaciente = document.getElementById('filtro-repasse-paciente')?.value.toLowerCase().trim() || '';
+            const setorSel = document.getElementById('filtro-repasse-setor')?.value || 'TODOS';
+            const grupoSel = document.getElementById('filtro-repasse-grupo')?.value || 'TODOS';
+
+            const barraFiltro = document.getElementById('barra-status-filtro-ativo');
+            const lblFiltro = document.getElementById('lbl-filtro-detalhe');
+            let detalhesFiltro = [];
+            if (grupoSel !== 'TODOS') detalhesFiltro.push(`Grupo: ${grupoSel}`);
+            if (setorSel !== 'TODOS') detalhesFiltro.push(`Setor: ${setorSel}`);
+            if (nomePaciente !== '') detalhesFiltro.push(`Paciente: "${nomePaciente}"`);
+
+            if (detalhesFiltro.length > 0) {
+                if (barraFiltro) barraFiltro.classList.remove('hidden');
+                if (lblFiltro) lblFiltro.innerText = detalhesFiltro.join(' | ');
+            } else {
+                if (barraFiltro) barraFiltro.classList.add('hidden');
+            }
+
+            const dadosFiltrados = dadosRepasseFormatados.filter(d => {
+                const batePaciente = nomePaciente === '' || (d.paciente && d.paciente.toLowerCase().includes(nomePaciente));
+                const bateSetor = (setorSel === 'TODOS') || (d.setor === setorSel);
+                const bateGrupo = (grupoSel === 'TODOS') || (d.grupo === grupoSel);
+                return batePaciente && bateSetor && bateGrupo;
+            });
+
+            renderizarDashboardRepasseFiltrado(dadosFiltrados);
+        }
+
+        function renderizarDashboardRepasseFiltrado(dados) {
+            let totReceita = 0;
+            let totTabela = 0;
+            let totAuditado = 0;
+
+            const gruposAuditadosMap = {};
+            const contasSet = new Set();
+            
+            const mapPacientes = {};
+            const mapConvenios = {};
+            const mapSetores = {};
+            const mapProdutosCobrados = {};
+            const mapProdutosGlosados = {};
+            let laudosOk = 0, laudosPendentes = 0;
+
+            dados.forEach(d => {
+                totReceita += d.receitaLancamento;
+                totTabela += d.valorTabela;
+                if (d.atendimento) contasSet.add(d.atendimento);
+
+                const statusAuditoria = String(d.dsAuditoria || '').trim().toUpperCase();
+                const ehAuditado = statusAuditoria.includes('VLR_AUDITADO') || d.vlrDif > 0;
+
+                if (ehAuditado) {
+                    totAuditado += d.vlrDif;
+                    gruposAuditadosMap[d.grupo] = (gruposAuditadosMap[d.grupo] || 0) + d.vlrDif;
+                }
+
+                mapPacientes[d.paciente] = (mapPacientes[d.paciente] || 0) + d.receitaLancamento;
+                mapSetores[d.setor] = (mapSetores[d.setor] || 0) + d.receitaLancamento;
+
+                if (!mapConvenios[d.convenio]) {
+                    mapConvenios[d.convenio] = { valorTotal: 0, glosaTotal: 0, contas: new Set() };
+                }
+                mapConvenios[d.convenio].valorTotal += d.receitaLancamento;
+                if (ehAuditado) mapConvenios[d.convenio].glosaTotal += d.vlrDif;
+                mapConvenios[d.convenio].contas.add(d.atendimento);
+
+                const stLaudo = String(d.laudoStatus || '').toUpperCase();
+                if (stLaudo.includes('SIM') || stLaudo.includes('OK') || stLaudo.includes('CONCLUÍDO') || stLaudo.includes('IDENTIFICADO')) {
+                    laudosOk++;
+                } else {
+                    laudosPendentes++;
+                }
+
+                const chaveItem = `${d.codFat} - ${d.descricao}`;
+                if (!mapProdutosCobrados[chaveItem]) {
+                    mapProdutosCobrados[chaveItem] = { freq: 0, valor: 0 };
+                }
+                mapProdutosCobrados[chaveItem].freq += d.qtd;
+                mapProdutosCobrados[chaveItem].valor += d.receitaLancamento;
+
+                if (ehAuditado) {
+                    if (!mapProdutosGlosados[chaveItem]) {
+                        mapProdutosGlosados[chaveItem] = { freq: 0, glosa: 0 };
+                    }
+                    mapProdutosGlosados[chaveItem].freq += d.qtd;
+                    mapProdutosGlosados[chaveItem].glosa += d.vlrDif;
+                }
+            });
+
+            const totalContas = contasSet.size || dados.length;
+            const mediaGlosaPct = totReceita > 0 ? ((totAuditado / totReceita) * 100) : 0;
+            const ticketMedioConta = totalContas > 0 ? (totReceita / totalContas) : 0;
+
+            let grupoTop = "-";
+            let maiorGlosaGrupo = 0;
+            Object.entries(gruposAuditadosMap).forEach(([grp, val]) => {
+                if (val > maiorGlosaGrupo) {
+                    maiorGlosaGrupo = val;
+                    grupoTop = grp;
+                }
+            });
+
+            nomeGrupoMaisAuditadoTop = grupoTop;
+
+            document.getElementById('rep-kpi-receita').innerText = 'R$ ' + totReceita.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('rep-kpi-tabela').innerText = 'R$ ' + totTabela.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('rep-kpi-auditado').innerText = 'R$ ' + totAuditado.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('rep-kpi-grupo-top').innerText = grupoTop !== "-" ? `${grupoTop} (R$ ${maiorGlosaGrupo.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})})` : "-";
+            document.getElementById('rep-kpi-laudos-pendentes').innerText = `${laudosPendentes} itens`;
+            document.getElementById('rep-total-registros').innerText = `${dados.length} itens em ${totalContas} contas`;
+
+            document.getElementById('txt-gauge-repasse-glosa').innerText = mediaGlosaPct.toFixed(1) + '%';
+            document.getElementById('txt-gauge-repasse-ticket').innerText = 'R$ ' + ticketMedioConta.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('txt-gauge-repasse-contas').innerText = totalContas.toLocaleString('pt-BR');
+
+            renderizarVelocimetrosRepasse(mediaGlosaPct, ticketMedioConta, totalContas);
+            renderizarGraficosRepasse(gruposAuditadosMap, totReceita, totAuditado);
+            renderizarLaudosChart(laudosOk, laudosPendentes);
+
+            renderizarMarketShareConvenios(mapConvenios, totReceita);
+            renderizarRankings(mapPacientes, mapConvenios, mapSetores);
+            renderizarCurvaABC(mapProdutosCobrados, mapProdutosGlosados);
+
+            renderizarTabelasAuditoria(dados);
+        }
+
+        function renderizarTabelasAuditoria(dados) {
+            const tbodyPac = document.getElementById('tabela-paciente-setor-grupo');
+            const tbodyGeral = document.getElementById('tabela-repasse-dados');
+
+            if (tbodyPac) {
+                if (dados.length === 0) {
+                    tbodyPac.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Nenhum registro encontrado para a seleção atual.</td></tr>`;
+                } else {
+                    tbodyPac.innerHTML = dados.slice(0, 150).map(d => {
+                        const statusAud = String(d.dsAuditoria || '').trim().toUpperCase();
+                        const ehAuditado = statusAud.includes('VLR_AUDITADO') || d.vlrDif > 0;
+                        const valorGlosaExibir = ehAuditado ? d.vlrDif : 0;
+
+                        return `
+                            <tr class="hover:bg-slate-50 border-b border-slate-100">
+                                <td class="py-2.5 px-4 font-bold text-slate-900">${d.paciente}<br><span class="text-[10px] text-slate-400 font-mono">Atend: ${d.atendimento} | Conv: ${d.convenio}</span></td>
+                                <td class="py-2.5 px-4 text-slate-600 font-semibold">${d.setor}</td>
+                                <td class="py-2.5 px-4 text-slate-600 font-bold text-blue-600">${d.grupo}</td>
+                                <td class="py-2.5 px-4 font-medium">${d.codFat} - ${d.descricao}</td>
+                                <td class="py-2.5 px-4 text-right font-mono font-bold text-emerald-600">R$ ${d.receitaLancamento.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                                <td class="py-2.5 px-4 text-right font-mono text-blue-600">R$ ${d.valorTabela.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                                <td class="py-2.5 px-4 text-right font-mono font-bold ${ehAuditado ? 'text-red-600' : 'text-emerald-600'}">
+                                    R$ ${valorGlosaExibir.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            if (tbodyGeral) {
+                if (dados.length === 0) {
+                    tbodyGeral.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Sem dados para a seleção.</td></tr>`;
+                } else {
+                    tbodyGeral.innerHTML = dados.slice(0, 100).map(d => {
+                        const ehAuditado = String(d.dsAuditoria || '').trim().toUpperCase().includes('VLR_AUDITADO') || d.vlrDif > 0;
+                        const valorGlosaExibir = ehAuditado ? d.vlrDif : 0;
+
+                        return `
+                            <tr class="hover:bg-slate-50 border-b border-slate-100">
+                                <td class="py-2.5 px-4 font-bold text-slate-900">${d.grupo}</td>
+                                <td class="py-2.5 px-4 text-slate-600">${d.descricao}</td>
+                                <td class="py-2.5 px-4 text-center font-mono">${d.qtd}</td>
+                                <td class="py-2.5 px-4 text-right font-mono font-bold text-emerald-600">R$ ${d.receitaLancamento.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                                <td class="py-2.5 px-4 text-right font-mono text-blue-600">R$ ${d.valorTabela.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                                <td class="py-2.5 px-4 text-right font-mono font-bold text-red-600">R$ ${valorGlosaExibir.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                                <td class="py-2.5 px-4 text-center">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ehAuditado ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">
+                                        ${ehAuditado ? 'VLR_AUDITADO' : 'LIBERADO'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        function filtrarPorGrupoTop() {
+            if (nomeGrupoMaisAuditadoTop && nomeGrupoMaisAuditadoTop !== "-") {
+                filtrarEIrParaTabela({ grupo: nomeGrupoMaisAuditadoTop });
+            }
+        }
+
+        function filtrarEIrParaTabela({ paciente, setor, grupo }) {
+            if (grupo) {
+                const sel = document.getElementById('filtro-repasse-grupo');
+                if (sel) sel.value = grupo;
+            }
+            if (setor) {
+                const sel = document.getElementById('filtro-repasse-setor');
+                if (sel) sel.value = setor;
+            }
+            if (paciente) {
+                const inp = document.getElementById('filtro-repasse-paciente');
+                if (inp) inp.value = paciente;
+            }
+
+            executarFiltroCruzadoGlobal();
+
+            const ancora = document.getElementById('secao-ancora-detalhamento');
+            if (ancora) {
+                ancora.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function limparFiltrosDrill() {
+            if(document.getElementById('filtro-repasse-grupo')) document.getElementById('filtro-repasse-grupo').value = 'TODOS';
+            if(document.getElementById('filtro-repasse-setor')) document.getElementById('filtro-repasse-setor').value = 'TODOS';
+            if(document.getElementById('filtro-repasse-paciente')) document.getElementById('filtro-repasse-paciente').value = '';
+            executarFiltroCruzadoGlobal();
+        }
+
+        function renderizarMarketShareConvenios(mapConvenios, totReceita) {
+            const tbody = document.getElementById('tabela-convenios-share');
+            if(!tbody) return;
+
+            const lista = Object.entries(mapConvenios).map(([nome, d]) => ({
+                nome,
+                atendimentos: d.contas.size,
+                valorTotal: d.valorTotal,
+                glosaTotal: d.glosaTotal,
+                pct: totReceita > 0 ? ((d.valorTotal / totReceita) * 100) : 0
+            })).sort((a,b) => b.valorTotal - a.valorTotal);
+
+            tbody.innerHTML = lista.map(c => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100">
+                    <td class="py-2 px-3 font-bold text-slate-900">${c.nome}</td>
+                    <td class="py-2 px-3 text-center font-mono">${c.atendimentos}</td>
+                    <td class="py-2 px-3 text-right font-mono text-emerald-600 font-bold">R$ ${c.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-2 px-3 text-right font-mono text-red-600 font-bold">R$ ${c.glosaTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td class="py-2 px-3 text-center font-bold text-blue-600">${c.pct.toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderizarRankings(pacientes, convenios, setores) {
+            const domPac = document.getElementById('rank-pacientes');
+            const domConv = document.getElementById('rank-convenios');
+            const domSet = document.getElementById('rank-setores');
+
+            if(domPac) {
+                const topPac = Object.entries(pacientes).sort((a,b) => b[1] - a[1]).slice(0, 7);
+                domPac.innerHTML = topPac.length > 0 ? topPac.map(([nome, val]) => `
+                    <tr onclick="filtrarEIrParaTabela({paciente: '${nome.replace(/'/g, "\\'")}'})" class="border-b border-slate-100 hover:bg-emerald-50/50 cursor-pointer transition-all" title="Clique para filtrar por este paciente">
+                        <td class="py-1.5 px-3 font-medium text-slate-800 truncate max-w-[150px]">${nome}</td>
+                        <td class="py-1.5 px-3 text-right font-mono font-bold text-emerald-600">R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                `).join('') : `<tr><td colspan="2" class="py-3 text-center text-slate-400">Sem dados</td></tr>`;
+            }
+
+            if(domConv) {
+                const topConv = Object.entries(convenios).sort((a,b) => b[1].valorTotal - a[1].valorTotal).slice(0, 7);
+                domConv.innerHTML = topConv.length > 0 ? topConv.map(([nome, d]) => `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="py-1.5 px-3 font-medium text-slate-800 truncate max-w-[150px]">${nome}</td>
+                        <td class="py-1.5 px-3 text-right font-mono font-bold text-blue-600">R$ ${d.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                `).join('') : `<tr><td colspan="2" class="py-3 text-center text-slate-400">Sem dados</td></tr>`;
+            }
+
+            if(domSet) {
+                const topSet = Object.entries(setores).sort((a,b) => b[1] - a[1]).slice(0, 7);
+                domSet.innerHTML = topSet.length > 0 ? topSet.map(([nome, val]) => `
+                    <tr onclick="filtrarEIrParaTabela({setor: '${nome.replace(/'/g, "\\'")}'})" class="border-b border-slate-100 hover:bg-amber-50/50 cursor-pointer transition-all" title="Clique para filtrar por este setor">
+                        <td class="py-1.5 px-3 font-medium text-slate-800 truncate max-w-[150px]">${nome}</td>
+                        <td class="py-1.5 px-3 text-right font-mono font-bold text-slate-900">R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                `).join('') : `<tr><td colspan="2" class="py-3 text-center text-slate-400">Sem dados</td></tr>`;
+            }
+        }
+
+        function renderizarCurvaABC(cobrados, glosados) {
+            const domCob = document.getElementById('top-produtos-cobrados');
+            const domGlo = document.getElementById('top-produtos-glosados');
+
+            if(domCob) {
+                const topCob = Object.entries(cobrados).sort((a,b) => b[1].valor - a[1].valor).slice(0, 7);
+                domCob.innerHTML = topCob.length > 0 ? topCob.map(([item, d]) => `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="py-1.5 px-3 font-medium text-slate-800 truncate max-w-[180px]">${item}</td>
+                        <td class="py-1.5 px-3 text-center font-mono">${d.freq}</td>
+                        <td class="py-1.5 px-3 text-right font-mono font-bold text-emerald-600">R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                `).join('') : `<tr><td colspan="3" class="py-3 text-center text-slate-400">Sem dados</td></tr>`;
+            }
+
+            if(domGlo) {
+                const topGlo = Object.entries(glosados).sort((a,b) => b[1].glosa - a[1].glosa).slice(0, 7);
+                domGlo.innerHTML = topGlo.length > 0 ? topGlo.map(([item, d]) => `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="py-1.5 px-3 font-medium text-slate-800 truncate max-w-[180px]">${item}</td>
+                        <td class="py-1.5 px-3 text-center font-mono">${d.freq}</td>
+                        <td class="py-1.5 px-3 text-right font-mono font-bold text-red-600">R$ ${d.glosa.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                `).join('') : `<tr><td colspan="3" class="py-4 text-center text-slate-400">Nenhum item glosado identificado.</td></tr>`;
+            }
+        }
+
+        function renderizarLaudosChart(ok, pendentes) {
+            if(!window.Chart || !document.getElementById('chartLaudosStatus')) return;
+
+            if (chartLaudosStatusInst) chartLaudosStatusInst.destroy();
+            chartLaudosStatusInst = new Chart(document.getElementById('chartLaudosStatus').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Identificado/OK', 'Pendente/N.I.'],
+                    datasets: [{
+                        data: [ok, pendentes],
+                        backgroundColor: ['#10b981', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+            });
+        }
+
+        function renderizarVelocimetrosRepasse(glosaPct, ticket, contas) {
+            if (!window.Chart) return;
+
+            const optGauge = {
+                responsive: true,
+                maintainAspectRatio: false,
+                rotation: -90,
+                circumference: 180,
+                plugins: { legend: { display: false } },
+                cutout: '80%'
+            };
+
+            if (gaugeRepasseGlosaInst) gaugeRepasseGlosaInst.destroy();
+            if (document.getElementById('gaugeRepasseGlosa')) {
+                gaugeRepasseGlosaInst = new Chart(document.getElementById('gaugeRepasseGlosa').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [glosaPct, Math.max(0, 100 - glosaPct)],
+                            backgroundColor: ['#ef4444', '#e2e8f0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: optGauge
+                });
+            }
+
+            const tktEscala = Math.min(100, (ticket / 5000) * 100);
+            if (gaugeRepasseTicketInst) gaugeRepasseTicketInst.destroy();
+            if (document.getElementById('gaugeRepasseTicket')) {
+                gaugeRepasseTicketInst = new Chart(document.getElementById('gaugeRepasseTicket').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [tktEscala, Math.max(0, 100 - tktEscala)],
+                            backgroundColor: ['#3b82f6', '#e2e8f0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: optGauge
+                });
+            }
+
+            const contasEscala = Math.min(100, (contas / 500) * 100);
+            if (gaugeRepasseContasInst) gaugeRepasseContasInst.destroy();
+            if (document.getElementById('gaugeRepasseContas')) {
+                gaugeRepasseContasInst = new Chart(document.getElementById('gaugeRepasseContas').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [contasEscala, Math.max(0, 100 - contasEscala)],
+                            backgroundColor: ['#10b981', '#e2e8f0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: optGauge
+                });
+            }
+        }
+
+        function renderizarGraficosRepasse(gruposAuditadosMap, totReceita, totAuditado) {
+            if (!window.Chart) return;
+
+            const ordenados = Object.entries(gruposAuditadosMap).sort((a,b) => b[1] - a[1]);
+            const labelsG = ordenados.map(x => x[0]);
+            const dataG = ordenados.map(x => x[1]);
+
+            if (chartRepasseGrupoInst) chartRepasseGrupoInst.destroy();
+            const elGroup = document.getElementById('chartRepasseGrupo');
+            if (elGroup) {
+                chartRepasseGrupoInst = new Chart(elGroup.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labelsG.length > 0 ? labelsG : ['Sem Dados'],
+                        datasets: [{
+                            label: 'Total Auditado/Glosado (R$)',
+                            data: dataG.length > 0 ? dataG : [0],
+                            backgroundColor: '#ef4444',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        onClick: (evt, elements) => {
+                            if (elements.length > 0) {
+                                const idx = elements[0].index;
+                                const grpClicado = labelsG[idx];
+                                if (grpClicado) {
+                                    filtrarEIrParaTabela({ grupo: grpClicado });
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (chartRepasseProporcaoInst) chartRepasseProporcaoInst.destroy();
+            const elProp = document.getElementById('chartRepasseProporcao');
+            if (elProp) {
+                chartRepasseProporcaoInst = new Chart(elProp.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Receita Líquida Tabela', 'Total Glosado/Auditado'],
+                        datasets: [{
+                            data: [Math.max(0, totReceita - totAuditado), totAuditado],
+                            backgroundColor: ['#10b981', '#ef4444']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+                });
+            }
+        }
+
+        function popularFiltrosPaciente(dados) {
+            const setores = new Set();
+            const grupos = new Set();
+
+            dados.forEach(d => {
+                if (d.setor) setores.add(d.setor);
+                if (d.grupo) grupos.add(d.grupo);
+            });
+
+            const selectSetor = document.getElementById('filtro-repasse-setor');
+            const selectGrupo = document.getElementById('filtro-repasse-grupo');
+
+            if (selectSetor) {
+                selectSetor.innerHTML = '<option value="TODOS">Todos os Setores</option>' + 
+                    Array.from(setores).sort().map(s => `<option value="${s}">${s}</option>`).join('');
+            }
+
+            if (selectGrupo) {
+                selectGrupo.innerHTML = '<option value="TODOS">Todos os Grupos</option>' + 
+                    Array.from(grupos).sort().map(g => `<option value="${g}">${g}</option>`).join('');
+            }
         }
 
         function mapearEventosInjetados() {
@@ -786,7 +1795,6 @@
             document.getElementById('form-matmed-total').value = c.valor_matmed_total || 0;
             document.getElementById('form-status').value = c.status;
             
-            // Força o recálculo do campo Repasse (que é apenas leitura) no formulário de edição
             document.getElementById('form-faturado').dispatchEvent(new Event('input'));
             document.getElementById('form-titulo').innerText = "Editando Registro Ativo";
         };
@@ -806,9 +1814,6 @@
             }
         };
 
-        // ==========================================
-        // MOTOR 2: QUADRO DE TAREFAS ESTILO MONDAY   
-        // ==========================================
         window.renderPainelTarefas = function() {
             const tbody = document.getElementById('container-tarefas');
             if(!tbody) return; tbody.innerHTML = '';
@@ -838,7 +1843,7 @@
                             <option value="backlog" ${t.status === 'backlog' ? 'selected' : ''}>Backlog</option>
                         </select>
                     </td>
-                    <td class="py-2.5 px-4 text-center"><button onclick="deleteTaskDirect('${t.id}')" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <td class="py-2.5 px-4 text-center"><button onclick="deleteTaskDirect('${t.id}')" class="text-slate-400 hover:text-red-500 cursor-pointer"><i class="fa-solid fa-trash-can"></i></button></td>
                 </tr>`;
             });
             calculateTaskMetrics(); updateTaskCharts();
@@ -901,7 +1906,6 @@
             gaugeTaskProgress.data.datasets[0].data = [done, Math.max(0, tot - done)]; gaugeTaskProgress.update();
         }
 
-        // Importação e exportação de backups do sistema
         window.exportarJson = function() { const db = JSON.parse(localStorage.getItem('db.json')); const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'db.json'; a.click(); };
         window.processarImportacaoJson = function(e) { const f = e.target.files[0]; if (!f) return; const reader = new FileReader(); reader.onload = function(evt) { try { const parsed = JSON.parse(evt.target.result); if(parsed && parsed.ultimas_contas) { localStorage.setItem('db.json', JSON.stringify(parsed)); carregarDadosCompletos(); alert('Dados importados!'); } }catch(err){alert('Arquivo inválido.');} }; reader.readAsText(f); };
     </script>
